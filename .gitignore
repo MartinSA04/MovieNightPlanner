@@ -10,6 +10,8 @@ node_modules
 !.env.*.example
 .env.local
 .env.*.local
+supabase/.temp
+supabase/.branches
 coverage
 playwright-report
 test-results

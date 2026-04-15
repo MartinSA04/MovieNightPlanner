@@ -16,14 +16,18 @@ Movie Night Planner is a pnpm workspace for a Next.js + Supabase app that helps 
 
 ## Run And Verify
 
-* Install: `pnpm install`
-* Start the app: `pnpm dev`
-* Lint: `pnpm lint`
-* Typecheck: `pnpm typecheck`
-* Unit tests: `pnpm test`
-* E2E tests: `pnpm e2e`
-* Local Supabase: `supabase start`
-* Reset DB: `supabase db reset`
+* Install: `corepack enable && corepack pnpm install`
+* Start the app: `corepack pnpm dev`
+* One-command local startup: `corepack pnpm local:dev`
+* Lint: `corepack pnpm lint`
+* Typecheck: `corepack pnpm typecheck`
+* Unit tests: `corepack pnpm test`
+* E2E tests: `corepack pnpm e2e`
+* Local Supabase start: `corepack pnpm db:start`
+* Local Supabase helper commands: `corepack pnpm local:up`, `local:status`, `local:reset`, `local:down`
+* Local Supabase env sync: `corepack pnpm setup:local-env`
+* Reset DB: `corepack pnpm db:reset`
+* Stop local Supabase: `corepack pnpm db:stop`
 
 ## Coding Standards
 

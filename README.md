@@ -34,20 +34,17 @@ Movie Night Planner is a collaborative planning app for small groups that want t
 ### Prerequisites
 
 * Node.js 20+
-* pnpm 10+
-* Supabase CLI
+* Corepack enabled for `pnpm`
+* Docker Engine or Docker Desktop
 
 ### Install
 
 ```bash
-pnpm install
+corepack enable
+corepack pnpm install
 ```
 
 ### Configure Environment
-
-```bash
-cp .env.example .env.local
-```
 
 Required variables:
 
@@ -59,30 +56,41 @@ Required variables:
 
 ### Local Development
 
-Start the database stack:
+Simplest local flow:
 
 ```bash
-supabase start
-supabase db reset
-```
-
-Run the app:
-
-```bash
-pnpm dev
+corepack pnpm local:dev
 ```
 
 Open `http://localhost:3000`.
 
+Notes:
+
+* `local:dev` starts local Supabase, syncs `.env.local`, and then launches the web app.
+* `db:start`, `db:stop`, `db:status`, and `db:reset` now handle Docker access automatically, including shells that have not picked up the `docker` group yet.
+* `setup:local-env` reads the running local Supabase stack and writes `.env.local` without echoing the secret values.
+* `TMDB_API_KEY` still needs to be set manually in `.env.local`.
+* Stop the local stack with `corepack pnpm local:down`.
+
 ## Commands
 
 ```bash
-pnpm dev
-pnpm build
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm e2e
+corepack pnpm dev
+corepack pnpm build
+corepack pnpm lint
+corepack pnpm typecheck
+corepack pnpm test
+corepack pnpm e2e
+corepack pnpm local:dev
+corepack pnpm local:up
+corepack pnpm local:status
+corepack pnpm local:reset
+corepack pnpm local:down
+corepack pnpm db:start
+corepack pnpm db:status
+corepack pnpm db:reset
+corepack pnpm db:stop
+corepack pnpm setup:local-env
 ```
 
 ## Documentation

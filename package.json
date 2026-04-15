@@ -14,14 +14,23 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "db:start": "supabase start",
-    "db:reset": "supabase db reset"
+    "db:start": "./scripts/local-up.sh",
+    "db:status": "./scripts/local-status.sh",
+    "db:reset": "./scripts/local-reset.sh",
+    "db:stop": "./scripts/local-down.sh",
+    "setup:local-env": "./scripts/setup-local-env.sh",
+    "local:up": "./scripts/local-up.sh",
+    "local:reset": "./scripts/local-reset.sh",
+    "local:down": "./scripts/local-down.sh",
+    "local:status": "./scripts/local-status.sh",
+    "local:dev": "./scripts/local-dev.sh"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.0",
     "@types/node": "^22.15.17",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "supabase": "^2.91.2",
     "typescript": "^5.8.3",
     "vitest": "^3.1.3"
   }
