@@ -1,0 +1,22 @@
+{
+  "extends": "./packages/config/tsconfig/base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@movie-night/domain": [
+        "packages/domain/src/index.ts"
+      ],
+      "@movie-night/domain/*": [
+        "packages/domain/src/*"
+      ],
+      "@movie-night/ui": [
+        "packages/ui/src/index.tsx"
+      ],
+      "@movie-night/ui/*": [
+        "packages/ui/src/*"
+      ]
+    }
+  },
+  "include": []
+}
+
