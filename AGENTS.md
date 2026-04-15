@@ -33,6 +33,16 @@ Movie Night Planner is a pnpm workspace for a Next.js + Supabase app that helps 
 * Keep sensitive writes in trusted server-side code.
 * Prefer small, composable modules and explicit names over clever abstractions.
 
+## Secrets And Safety
+
+* Never commit `.env`, `.env.*`, API keys, bearer tokens, service-role keys, SSH private keys, cookies, or exported credentials.
+* Commit only placeholder files such as `.env.example`.
+* Treat `NEXT_PUBLIC_*` values as client-visible and never place server-only secrets there.
+* Do not print secret values into terminal output, docs, issues, PR text, screenshots, or chat responses. Summarize them without revealing the raw value.
+* If a task requires checking env setup, confirm whether a variable exists and whether its format looks valid, but do not echo the full secret.
+* Before any commit or push, review staged changes for accidental secret exposure, especially `.env` files, config files, seed data, and copied curl examples.
+* If a secret is found in tracked files or history during work, stop, flag it immediately, and avoid copying it into any new location.
+
 ## Domain Rules
 
 * One vote per user per event for the MVP.
@@ -45,6 +55,7 @@ Movie Night Planner is a pnpm workspace for a Next.js + Supabase app that helps 
 * App builds.
 * `pnpm lint`, `pnpm typecheck`, and relevant tests pass.
 * Docs are updated with architecture or workflow changes.
+* No secrets, tokens, or private credentials are staged, committed, or pasted into docs.
 * No unrelated files are changed.
 
 ## Docs
@@ -54,4 +65,3 @@ Movie Night Planner is a pnpm workspace for a Next.js + Supabase app that helps 
 * [Product Spec](docs/product-spec.md)
 * [Database Schema](docs/database-schema.md)
 * [API Contracts](docs/api-contracts.md)
-
