@@ -63,9 +63,11 @@ RLS should deny by default. Policies should be based on:
 * owner/admin role checks for group and event management
 * open event state for suggestions and votes
 
+Membership helper functions used inside RLS policies should run as `security definer` so
+group-based checks do not recurse back into `group_members` policy evaluation.
+
 ## Cache Strategy
 
 * keep raw TMDb payload fragments for debugging
 * store normalized provider subsets for app use
 * refresh watch-provider entries periodically
-

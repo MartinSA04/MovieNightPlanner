@@ -103,17 +103,19 @@ corepack pnpm setup:local-env
 
 ## Current Scope
 
-The scaffold includes:
+The current implementation includes:
 
-* a Next.js app shell
-* a shared domain package for voting, permissions, and provider matching
-* baseline docs and ADRs
-* an initial Supabase schema and seed file
-* unit and e2e testing entry points
+* local Supabase auth with profile bootstrap
+* dashboard flows for creating groups, joining by invite code, and saving streaming services
+* group detail pages with member lists and draft event creation
+* event detail pages that are ready for suggestions, votes, and winner selection
+* invite landing pages that route new or returning members into the app
+* a shared domain package for permissions, validation, voting, and provider matching
+* baseline docs, ADRs, an initial Supabase schema, and test coverage
 
 Implementation should continue in phases:
 
-1. Auth, profiles, groups, and subscriptions
-2. Events, suggestions, and voting
-3. Provider matching badges and winner selection
-4. Invites, comments, realtime, and broader e2e coverage
+1. TMDb search plus suggestion submission on the event route
+2. Vote casting, event status transitions, and winner selection
+3. Provider matching badges and event-level availability signals
+4. Comments, realtime updates, and broader authenticated e2e coverage

@@ -17,6 +17,21 @@ export const publicEnv = publicEnvSchema.parse({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 });
 
+export function getSupabasePublicEnv() {
+  const { NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY } = publicEnv;
+
+  if (!NEXT_PUBLIC_SUPABASE_URL || !NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    throw new Error(
+      "Supabase public environment variables are missing. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+    );
+  }
+
+  return {
+    supabaseUrl: NEXT_PUBLIC_SUPABASE_URL,
+    supabaseAnonKey: NEXT_PUBLIC_SUPABASE_ANON_KEY
+  };
+}
+
 export function getServerEnv() {
   return serverEnvSchema.parse({
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -24,3 +39,18 @@ export function getServerEnv() {
   });
 }
 
+export function getSupabaseServiceRoleEnv() {
+  const { SUPABASE_SERVICE_ROLE_KEY } = getServerEnv();
+  const { supabaseUrl } = getSupabasePublicEnv();
+
+  if (!SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY is missing. Server-side group management requires the service role key."
+    );
+  }
+
+  return {
+    supabaseUrl,
+    serviceRoleKey: SUPABASE_SERVICE_ROLE_KEY
+  };
+}

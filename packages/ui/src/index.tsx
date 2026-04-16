@@ -8,13 +8,13 @@ export function cn(...inputs: ClassValue[]): string {
 }
 
 const panelVariants = cva(
-  "rounded-[28px] border border-white/10 bg-white/70 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur",
+  "rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6",
   {
     variants: {
       tone: {
         default: "",
-        accent: "bg-amber-50/90 border-amber-200/50",
-        muted: "bg-slate-50/90 border-slate-200/70"
+        accent: "border-amber-200 bg-amber-50/70",
+        muted: "bg-slate-50"
       }
     },
     defaultVariants: {
@@ -39,7 +39,7 @@ export function SectionHeading(props: React.HTMLAttributes<HTMLDivElement>) {
     <div
       {...props}
       className={cn(
-        "text-xs font-semibold uppercase tracking-[0.24em] text-slate-500",
+        "text-xs font-semibold uppercase tracking-[0.18em] text-slate-500",
         props.className
       )}
     />
@@ -52,8 +52,8 @@ const pillVariants = cva(
     variants: {
       tone: {
         neutral: "bg-slate-900 text-white",
-        accent: "bg-amber-200 text-amber-950",
-        muted: "bg-slate-200 text-slate-700"
+        accent: "bg-amber-200 text-slate-900",
+        muted: "bg-slate-100 text-slate-700"
       }
     },
     defaultVariants: {

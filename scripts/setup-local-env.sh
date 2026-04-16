@@ -36,15 +36,29 @@ if [ -f .env.local ]; then
   fi
 fi
 
-cat > .env.local <<EOF
+if [ "$tmdb_api_key" = "your-tmdb-api-key-or-bearer-token" ] && [ -f apps/web/.env.local ]; then
+  existing_tmdb="$(sed -n 's/^TMDB_API_KEY=//p' apps/web/.env.local | tail -n 1)"
+  if [ -n "${existing_tmdb:-}" ]; then
+    tmdb_api_key="$existing_tmdb"
+  fi
+fi
+
+write_env_file() {
+  local target="$1"
+
+  cat > "$target" <<EOF
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_SUPABASE_URL=$api_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=$anon_key
 SUPABASE_SERVICE_ROLE_KEY=$service_role_key
 TMDB_API_KEY=$tmdb_api_key
 EOF
+}
 
-echo "Wrote .env.local for local Supabase."
+write_env_file .env.local
+write_env_file apps/web/.env.local
+
+echo "Wrote .env.local and apps/web/.env.local for local Supabase."
 if [ "$tmdb_api_key" = "your-tmdb-api-key-or-bearer-token" ]; then
   echo "TMDB_API_KEY still needs a real value before movie search features will work."
 fi

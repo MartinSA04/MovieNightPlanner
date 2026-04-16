@@ -1,10 +1,23 @@
 import { z } from "zod";
 
 const countryCodeSchema = z.string().length(2).transform((value) => value.toUpperCase());
+const inviteCodeSchema = z
+  .string()
+  .trim()
+  .min(6)
+  .max(12)
+  .transform((value) => value.toUpperCase())
+  .refine((value) => /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]+$/.test(value), {
+    message: "Invite codes may only contain uppercase letters and digits 2-9."
+  });
 
 export const createGroupSchema = z.object({
   name: z.string().trim().min(1).max(80),
   countryCode: countryCodeSchema
+});
+
+export const joinGroupByInviteSchema = z.object({
+  inviteCode: inviteCodeSchema
 });
 
 export const createEventSchema = z.object({
@@ -27,12 +40,12 @@ export const castVoteSchema = z.object({
 });
 
 export const updateStreamingServicesSchema = z.object({
-  providerIds: z.array(z.number().int().positive()).max(20)
+  providerIds: z.array(z.string().uuid()).max(20)
 });
 
 export type CreateGroupInput = z.infer<typeof createGroupSchema>;
+export type JoinGroupByInviteInput = z.infer<typeof joinGroupByInviteSchema>;
 export type CreateEventInput = z.infer<typeof createEventSchema>;
 export type AddSuggestionInput = z.infer<typeof addSuggestionSchema>;
 export type CastVoteInput = z.infer<typeof castVoteSchema>;
 export type UpdateStreamingServicesInput = z.infer<typeof updateStreamingServicesSchema>;
-
