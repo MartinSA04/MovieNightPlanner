@@ -54,6 +54,68 @@ Movie Night Planner is a pnpm workspace for a Next.js + Supabase app that helps 
 * Treat event or group region as the source of truth for provider matching.
 * Only owner/admin flows should create or manage membership-sensitive resources.
 
+## UI/UX and Design Principles
+
+All agents contributing to this project must prioritize clean, modern, and minimal design. The product should feel simple, polished, and easy to use at every step.
+
+### Core Principles
+
+* Prefer clarity over decoration.
+* Keep interfaces visually light and uncluttered.
+* Minimize the number of actions required to complete a task.
+* Make important actions obvious and secondary actions quiet.
+* Maintain strong visual hierarchy through spacing, typography, and contrast.
+* Favor consistency across pages, components, and flows.
+
+### Design Direction
+
+* Use a minimal aesthetic with generous whitespace.
+* Avoid crowded layouts, excessive borders, unnecessary shadows, and visual noise.
+* Limit color usage; use accent colors intentionally for important interactive elements.
+* Use simple, readable typography and clear sizing hierarchy.
+* Keep component styling cohesive and understated.
+
+### UX Expectations
+
+* Every screen should have a clear primary purpose.
+* Navigation should be intuitive and require little explanation.
+* Reduce friction in core flows such as creating a movie night, adding suggestions, voting, and viewing streaming availability.
+* Prefer familiar patterns over clever but confusing interactions.
+* Ensure users can understand the interface quickly without needing guidance.
+
+### Component Guidelines
+
+* Reuse existing components and patterns wherever possible.
+* Avoid introducing one-off UI elements unless clearly justified.
+* Buttons, inputs, modals, cards, and navigation elements should feel consistent throughout the app.
+* Forms should be short, clear, and forgiving.
+* Feedback states should always be present: loading, empty, success, and error.
+
+### Minimalism Rules
+
+* Before adding any UI element, ask whether it meaningfully improves usability.
+* Remove anything that does not support the main user flow.
+* Default to fewer choices, less text, and simpler layouts.
+* Do not add decorative features that increase complexity without real user benefit.
+
+### Responsiveness and Accessibility
+
+* Design must work well on mobile first, then scale elegantly to larger screens.
+* Preserve simplicity and usability across screen sizes.
+* Ensure good contrast, keyboard accessibility, and clear interactive states.
+* Use accessible labels, semantic structure, and predictable interactions.
+
+### Implementation Standard
+
+When building or updating UI:
+
+1. Start with the simplest possible layout.
+2. Optimize for usability first, visual polish second.
+3. Refine until the interface feels clean, balanced, and effortless.
+4. If a design feels busy, reduce rather than add.
+
+The expected result is an interface that feels modern, calm, lightweight, and highly usable.
+
 ## Done Criteria
 
 * App builds.

@@ -1,93 +1,83 @@
 import Link from "next/link";
-import { Panel, SectionHeading } from "@movie-night/ui";
+import { Panel, SectionHeading, buttonVariants } from "@movie-night/ui";
 import { AppShell } from "@/components/app-shell";
 import { getCurrentUser } from "@/server/auth";
 
 export default async function HomePage() {
   const user = await getCurrentUser();
 
-  const menu = [
-    { href: "/", label: "Home", active: true },
-    { href: user ? "/dashboard" : "/login", label: user ? "Dashboard" : "Login" }
-  ];
-
-  const sections: Array<{ href?: string; label: string }> = user
+  const overview = user
     ? [
-        { href: "/dashboard#groups", label: "Groups" },
-        { href: "/dashboard#join", label: "Invites" },
-        { href: "/dashboard#create", label: "Create" },
-        { href: "/dashboard#services", label: "Services" }
+        {
+          description: "Open a group from the sidebar and keep the active context visible.",
+          title: "Groups"
+        },
+        {
+          description: "Create new events from the Events view where they belong.",
+          title: "Events"
+        },
+        {
+          description: "Set country and streaming services from user settings.",
+          title: "Settings"
+        }
       ]
     : [
-        { label: "Groups" },
-        { label: "Invites" },
-        { label: "Events" },
-        { label: "Services" }
+        {
+          description: "Create a group or join one with a short invite code.",
+          title: "Groups"
+        },
+        {
+          description: "Collect suggestions, vote together, and settle on one movie.",
+          title: "Events"
+        },
+        {
+          description: "See which streaming services your group already has.",
+          title: "Availability"
+        }
       ];
 
   return (
     <AppShell
-      actions={
-        <>
-          <Link
-            className="inline-flex rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
-            href={user ? "/dashboard" : "/login"}
-          >
-            {user ? "Open dashboard" : "Sign in"}
-          </Link>
-          {!user ? (
-            <Link
-              className="inline-flex rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
-              href="/login"
-            >
-              Create account
-            </Link>
-          ) : null}
-        </>
-      }
-      menu={menu}
-      subtitle="Groups, invites, events, and streaming services."
+      subtitle="Plan movie nights without scattered links, duplicated actions, or hidden settings."
       title="Plan movie nights."
     >
-      <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <Panel className="space-y-4">
-          <SectionHeading>Actions</SectionHeading>
-          <div className="grid gap-3">
-            <Link
-              className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-900 transition hover:border-slate-900"
-              href={user ? "/dashboard#groups" : "/login"}
-            >
-              {user ? "Open groups" : "Sign in to continue"}
+      <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+        <Panel className="space-y-5">
+          <SectionHeading>{user ? "Continue" : "Get Started"}</SectionHeading>
+          <div className="space-y-3">
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
+              {user ? "Pick up where you left off." : "A cleaner way to plan movie night."}
+            </h2>
+            <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-300">
+              {user
+                ? "Open the app to jump back into your groups, events, and settings."
+                : "Create an account, start a group, and keep suggestions, voting, and streaming availability in one place."}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link className={buttonVariants()} href={user ? "/dashboard" : "/login"}>
+              {user ? "Open app" : "Sign in"}
             </Link>
-            <Link
-              className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-900 transition hover:border-slate-900"
-              href={user ? "/dashboard#create" : "/login"}
-            >
-              {user ? "Create a group" : "Create an account"}
-            </Link>
+            {!user ? (
+              <Link className={buttonVariants({ variant: "secondary" })} href="/login">
+                Create account
+              </Link>
+            ) : null}
           </div>
         </Panel>
 
         <Panel tone="muted" className="space-y-4">
-          <SectionHeading>Menu</SectionHeading>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {sections.map((section) => (
-              section.href ? (
-                <Link
-                  key={`${section.href}-${section.label}`}
-                  className="rounded-2xl bg-white px-4 py-4 text-base font-semibold text-slate-900 transition hover:bg-slate-100"
-                  href={section.href}
-                >
-                  {section.label}
-                </Link>
-              ) : (
-                <div
-                  key={section.label}
-                  className="rounded-2xl bg-white px-4 py-4 text-base font-semibold text-slate-900"
-                >
-                  {section.label}
-                </div>
-              )
+          <SectionHeading>{user ? "Inside The App" : "What You Can Do"}</SectionHeading>
+          <div className="grid gap-3">
+            {overview.map((item) => (
+              <div
+                key={item.title}
+                className="rounded-[24px] bg-white px-4 py-4 dark:bg-slate-950"
+              >
+                <p className="text-base font-semibold text-slate-950 dark:text-white">{item.title}</p>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{item.description}</p>
+              </div>
             ))}
           </div>
         </Panel>

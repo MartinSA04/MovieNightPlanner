@@ -17,18 +17,16 @@ export interface DashboardGroup {
   role: "owner" | "admin" | "member";
 }
 
-export interface StreamingServiceOption {
-  id: string;
-  name: string;
-  providerType: string;
-}
-
 export interface DashboardData {
   groups: DashboardGroup[];
   profile: AppProfile;
-  selectedServiceIds: string[];
-  streamingServices: StreamingServiceOption[];
-  userEmail: string;
+}
+
+export interface NavigationGroup {
+  countryCode: string;
+  id: string;
+  name: string;
+  role: "owner" | "admin" | "member";
 }
 
 export interface GroupMemberView {
@@ -100,6 +98,53 @@ function normalizeGroupRecord(record: Record<string, unknown>, role: DashboardGr
   };
 }
 
+async function loadGroupsForUser(userId: string, supabase: Awaited<ReturnType<typeof createSupabaseClient>>) {
+  const { data: membershipRows, error: membershipsError } = await supabase
+    .from("group_members")
+    .select("group_id, role, joined_at")
+    .eq("user_id", userId)
+    .order("joined_at", { ascending: false });
+
+  if (membershipsError) {
+    throw new Error(`Could not load memberships: ${membershipsError.message}`);
+  }
+
+  const memberships = membershipRows ?? [];
+  const groupIds = memberships.map((row) => row.group_id);
+
+  if (groupIds.length === 0) {
+    return [];
+  }
+
+  const { data: groupRows, error: groupsError } = await supabase
+    .from("groups")
+    .select("id, name, country_code, invite_code, created_at")
+    .in("id", groupIds);
+
+  if (groupsError) {
+    throw new Error(`Could not load groups: ${groupsError.message}`);
+  }
+
+  const groupsById = new Map(
+    (groupRows ?? []).map((row) => [row.id, normalizeGroupRecord(row, "member")])
+  );
+
+  return memberships
+    .map((membership) => {
+      const baseGroup = groupsById.get(membership.group_id);
+
+      if (!baseGroup) {
+        return null;
+      }
+
+      return {
+        ...baseGroup,
+        role: membership.role
+      };
+    })
+    .filter((group): group is DashboardGroup => group !== null);
+}
+
 function mapGroupPreview(record: {
   country_code: string;
   id: string;
@@ -118,78 +163,19 @@ export async function loadDashboardData(): Promise<DashboardData> {
   const user = await requireCurrentUser();
   const supabase = await createSupabaseClient();
   const profile = await ensureProfileForUser(user, supabase);
-
-  const [{ data: membershipRows, error: membershipsError }, { data: subscriptionRows, error: subscriptionsError }, { data: serviceRows, error: servicesError }] =
-    await Promise.all([
-      supabase
-        .from("group_members")
-        .select("group_id, role, joined_at")
-        .eq("user_id", user.id)
-        .order("joined_at", { ascending: false }),
-      supabase.from("user_streaming_services").select("streaming_service_id").eq("user_id", user.id),
-      supabase
-        .from("streaming_services")
-        .select("id, name, provider_type")
-        .order("name", { ascending: true })
-    ]);
-
-  if (membershipsError) {
-    throw new Error(`Could not load memberships: ${membershipsError.message}`);
-  }
-
-  if (subscriptionsError) {
-    throw new Error(`Could not load user subscriptions: ${subscriptionsError.message}`);
-  }
-
-  if (servicesError) {
-    throw new Error(`Could not load streaming services: ${servicesError.message}`);
-  }
-
-  const memberships = membershipRows ?? [];
-  const groupIds = memberships.map((row) => row.group_id);
-  let groups: DashboardGroup[] = [];
-
-  if (groupIds.length > 0) {
-    const { data: groupRows, error: groupsError } = await supabase
-      .from("groups")
-      .select("id, name, country_code, invite_code, created_at")
-      .in("id", groupIds);
-
-    if (groupsError) {
-      throw new Error(`Could not load groups: ${groupsError.message}`);
-    }
-
-    const groupsById = new Map(
-      (groupRows ?? []).map((row) => [row.id, normalizeGroupRecord(row, "member")])
-    );
-
-    groups = memberships
-      .map((membership) => {
-        const baseGroup = groupsById.get(membership.group_id);
-
-        if (!baseGroup) {
-          return null;
-        }
-
-        return {
-          ...baseGroup,
-          role: membership.role
-        };
-      })
-      .filter((group): group is DashboardGroup => group !== null);
-  }
+  const groups = await loadGroupsForUser(user.id, supabase);
 
   return {
     groups,
-    profile,
-    selectedServiceIds: (subscriptionRows ?? []).map((row) => row.streaming_service_id),
-    streamingServices: (serviceRows ?? []).map((row) => ({
-      id: row.id,
-      name: row.name,
-      providerType: row.provider_type
-    })),
-    userEmail: user.email ?? profile.email
+    profile
   };
+}
+
+export async function loadNavigationGroups(): Promise<NavigationGroup[]> {
+  const user = await requireCurrentUser();
+  const supabase = await createSupabaseClient();
+
+  return loadGroupsForUser(user.id, supabase);
 }
 
 export async function createGroupForOwner(input: {

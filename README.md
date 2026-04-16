@@ -106,16 +106,17 @@ corepack pnpm setup:local-env
 The current implementation includes:
 
 * local Supabase auth with profile bootstrap
-* dashboard flows for creating groups, joining by invite code, and saving streaming services
-* group detail pages with member lists and draft event creation
-* event detail pages that are ready for suggestions, votes, and winner selection
+* dedicated group creation and invite-join pages, plus a dedicated user settings page for country and streaming preferences
+* a dark-mode app shell with collapsible sidebar navigation for settings, group actions, and group navigation
+* group detail pages with separate events, members, and create-event views
+* event detail pages with dedicated TMDb suggestion search screens and add-to-event suggestions
 * invite landing pages that route new or returning members into the app
 * a shared domain package for permissions, validation, voting, and provider matching
+* TMDb server utilities that normalize payloads and cache movie/provider data in Supabase
 * baseline docs, ADRs, an initial Supabase schema, and test coverage
 
 Implementation should continue in phases:
 
-1. TMDb search plus suggestion submission on the event route
-2. Vote casting, event status transitions, and winner selection
-3. Provider matching badges and event-level availability signals
-4. Comments, realtime updates, and broader authenticated e2e coverage
+1. Vote casting, event status transitions, and winner selection
+2. Provider matching badges against group subscriptions
+3. Comments, realtime updates, and broader authenticated e2e coverage

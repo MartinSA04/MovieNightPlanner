@@ -44,8 +44,9 @@ Movie Night Planner helps small groups move from "what should we watch?" to a cl
 * landing page
 * login and signup
 * invite acceptance page
-* dashboard
-* groups list
+* sidebar-first app navigation
+* create group
+* join group
 * group detail
 * event detail
 * profile and settings
@@ -57,4 +58,3 @@ Movie Night Planner helps small groups move from "what should we watch?" to a cl
 * make voting state legible at a glance
 * separate subscription availability from rent/buy availability
 * avoid burying permission rules inside presentation components
-

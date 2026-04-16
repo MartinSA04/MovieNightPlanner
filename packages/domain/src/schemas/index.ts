@@ -34,13 +34,20 @@ export const addSuggestionSchema = z.object({
   note: z.string().trim().max(280).optional()
 });
 
+export const searchMoviesSchema = z.object({
+  page: z.coerce.number().int().min(1).max(5).default(1),
+  query: z.string().trim().min(2).max(100),
+  regionCode: countryCodeSchema.optional()
+});
+
 export const castVoteSchema = z.object({
   eventId: z.string().uuid(),
   suggestionId: z.string().uuid()
 });
 
-export const updateStreamingServicesSchema = z.object({
-  providerIds: z.array(z.string().uuid()).max(20)
+export const updateUserSettingsSchema = z.object({
+  countryCode: countryCodeSchema,
+  providerIds: z.array(z.string().uuid()).max(200)
 });
 
 export type CreateGroupInput = z.infer<typeof createGroupSchema>;
@@ -48,4 +55,5 @@ export type JoinGroupByInviteInput = z.infer<typeof joinGroupByInviteSchema>;
 export type CreateEventInput = z.infer<typeof createEventSchema>;
 export type AddSuggestionInput = z.infer<typeof addSuggestionSchema>;
 export type CastVoteInput = z.infer<typeof castVoteSchema>;
-export type UpdateStreamingServicesInput = z.infer<typeof updateStreamingServicesSchema>;
+export type SearchMoviesInput = z.infer<typeof searchMoviesSchema>;
+export type UpdateUserSettingsInput = z.infer<typeof updateUserSettingsSchema>;

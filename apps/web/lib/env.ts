@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const TMDB_PLACEHOLDER = "your-tmdb-api-key-or-bearer-token";
+
 const publicEnvSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
@@ -16,6 +18,23 @@ export const publicEnv = publicEnvSchema.parse({
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 });
+
+function normalizeEnvValue(value: string | undefined) {
+  if (!value) {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1).trim();
+  }
+
+  return trimmed;
+}
 
 export function getSupabasePublicEnv() {
   const { NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY } = publicEnv;
@@ -37,6 +56,26 @@ export function getServerEnv() {
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     TMDB_API_KEY: process.env.TMDB_API_KEY
   });
+}
+
+export function hasTmdbEnv() {
+  const credential = normalizeEnvValue(getServerEnv().TMDB_API_KEY);
+
+  return Boolean(credential && credential !== TMDB_PLACEHOLDER);
+}
+
+export function getTmdbEnv() {
+  const credential = normalizeEnvValue(getServerEnv().TMDB_API_KEY);
+
+  if (!credential || credential === TMDB_PLACEHOLDER) {
+    throw new Error(
+      "TMDB_API_KEY is missing. TMDb search requires a real TMDb API key or bearer token."
+    );
+  }
+
+  return {
+    credential
+  };
 }
 
 export function getSupabaseServiceRoleEnv() {

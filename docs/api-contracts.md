@@ -31,7 +31,8 @@ Transitions event state between draft, open, locked, completed, and cancelled.
 
 ### `searchMovies`
 
-Calls TMDb server-side, validates query input, and returns normalized search results.
+Calls TMDb server-side, validates query input, caches normalized movie/provider data, and
+returns normalized search results.
 
 ### `addSuggestion`
 
@@ -49,9 +50,17 @@ Clears the current user's vote while the event is open.
 
 Persists the winning suggestion on a locked or completed event.
 
-### `updateUserStreamingServices`
+### `updateUserSettings`
 
-Replaces the current user's selected streaming services.
+Updates the current user's country code and replaces the selected streaming services.
+
+## Planned Route Handlers
+
+### `GET /api/settings/providers`
+
+Requires authentication, fetches the movie watch-provider catalog from TMDb for a given
+country code, syncs those providers into `streaming_services`, and returns a normalized list
+for the settings UI.
 
 ## Error Shape
 
@@ -70,4 +79,3 @@ type AppActionError = {
 * return normalized domain objects, not raw DB rows when avoidable
 * keep provider matching as a dedicated result object
 * do not expose service-role operations to the client
-

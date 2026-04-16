@@ -6,12 +6,17 @@ import { redirect } from "next/navigation";
 import { ensureProfileForUser, requireCurrentUser } from "@/server/auth";
 import { createEventForGroup } from "@/server/events";
 
-function redirectToGroup(groupId: string, type: "error" | "notice", message: string): never {
+function redirectToGroup(
+  groupId: string,
+  type: "error" | "notice",
+  message: string,
+  view: "events" | "members" | "new-event" = "events"
+): never {
   if (!groupId) {
-    redirect(`/dashboard?${type}=${encodeURIComponent(message)}`);
+    redirect(`/groups/new?${type}=${encodeURIComponent(message)}`);
   }
 
-  redirect(`/groups/${groupId}?${type}=${encodeURIComponent(message)}`);
+  redirect(`/groups/${groupId}?view=${view}&${type}=${encodeURIComponent(message)}`);
 }
 
 export async function createEventAction(formData: FormData) {
@@ -20,16 +25,32 @@ export async function createEventAction(formData: FormData) {
 
   const groupId = String(formData.get("groupId") ?? "");
   const description = String(formData.get("description") ?? "").trim();
+  const scheduledForValue = String(formData.get("scheduledFor") ?? "").trim();
+  const scheduledForDate = scheduledForValue.length > 0 ? new Date(scheduledForValue) : null;
+  const scheduledFor =
+    scheduledForDate && Number.isFinite(scheduledForDate.getTime())
+      ? scheduledForDate.toISOString()
+      : undefined;
+
+  if (scheduledForValue.length > 0 && !scheduledFor) {
+    redirectToGroup(groupId, "error", "Choose a valid schedule.", "new-event");
+  }
 
   const parsed = createEventSchema.safeParse({
     description: description.length > 0 ? description : undefined,
     groupId,
     regionCode: String(formData.get("regionCode") ?? "").toUpperCase(),
+    scheduledFor,
     title: formData.get("title")
   });
 
   if (!parsed.success) {
-    redirectToGroup(groupId, "error", "Create an event with a title and 2-letter region code.");
+    redirectToGroup(
+      groupId,
+      "error",
+      "Create an event with a title, region, and optional valid schedule.",
+      "new-event"
+    );
   }
 
   try {
@@ -39,9 +60,9 @@ export async function createEventAction(formData: FormData) {
     });
 
     revalidatePath(`/groups/${groupId}`);
-    redirect(`/events/${event.id}?notice=${encodeURIComponent("Event created.")}`);
+    redirect(`/events/${event.id}?view=suggestions&notice=${encodeURIComponent("Event created.")}`);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not create event.";
-    redirectToGroup(groupId, "error", message);
+    redirectToGroup(groupId, "error", message, "new-event");
   }
 }

@@ -6,10 +6,20 @@
   color-scheme: light;
   --background: #f6f3ed;
   --foreground: #0f172a;
+  --surface: rgba(255, 255, 255, 0.92);
+  --surface-muted: rgba(248, 250, 252, 0.86);
 }
 
 * {
   box-sizing: border-box;
+}
+
+html.dark {
+  color-scheme: dark;
+  --background: #020617;
+  --foreground: #e2e8f0;
+  --surface: rgba(15, 23, 42, 0.92);
+  --surface-muted: rgba(15, 23, 42, 0.72);
 }
 
 html {
@@ -26,6 +36,13 @@ body {
     "Avenir Next",
     "Segoe UI",
     sans-serif;
+}
+
+html.dark body {
+  background:
+    radial-gradient(circle at top, rgba(245, 158, 11, 0.16), transparent 28%),
+    radial-gradient(circle at right, rgba(59, 130, 246, 0.1), transparent 34%),
+    linear-gradient(180deg, #020617 0%, #0f172a 100%);
 }
 
 h1,

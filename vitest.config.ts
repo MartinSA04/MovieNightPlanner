@@ -4,6 +4,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
+      "@": path.resolve(__dirname, "apps/web"),
       "@movie-night/domain": path.resolve(__dirname, "packages/domain/src/index.ts"),
       "@movie-night/domain/": path.resolve(__dirname, "packages/domain/src/"),
       "@movie-night/ui": path.resolve(__dirname, "packages/ui/src/index.tsx"),
@@ -15,4 +16,3 @@ export default defineConfig({
     include: ["tests/unit/**/*.test.ts", "tests/integration/**/*.test.ts"]
   }
 });
-

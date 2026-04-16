@@ -48,6 +48,22 @@ function profilePayloadFromUser(user: User) {
   };
 }
 
+function normalizeProfileRow(row: {
+  avatar_url: string | null;
+  country_code: string;
+  display_name: string;
+  email: string;
+  id: string;
+}): AppProfile {
+  return {
+    avatar_url: row.avatar_url,
+    country_code: normalizeCountryCode(row.country_code),
+    display_name: row.display_name,
+    email: row.email,
+    id: row.id
+  };
+}
+
 export async function getCurrentUser() {
   const supabase = await createClient();
   const {
@@ -72,11 +88,38 @@ export async function ensureProfileForUser(
   existingClient?: SupabaseClient
 ): Promise<AppProfile> {
   const supabase = existingClient ?? (await createClient());
+  const { data: existingProfile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, display_name, email, avatar_url, country_code")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    throw new Error(`Could not load profile for ${user.id}: ${profileError.message}`);
+  }
+
+  if (existingProfile) {
+    if (user.email && existingProfile.email !== user.email) {
+      const { data: updatedProfile, error: updateError } = await supabase
+        .from("profiles")
+        .update({ email: user.email })
+        .eq("id", user.id)
+        .select("id, display_name, email, avatar_url, country_code")
+        .single();
+
+      if (updateError) {
+        throw new Error(`Could not sync profile for ${user.id}: ${updateError.message}`);
+      }
+
+      return normalizeProfileRow(updatedProfile);
+    }
+
+    return normalizeProfileRow(existingProfile);
+  }
+
   const { data, error } = await supabase
     .from("profiles")
-    .upsert(profilePayloadFromUser(user), {
-      onConflict: "id"
-    })
+    .insert(profilePayloadFromUser(user))
     .select("id, display_name, email, avatar_url, country_code")
     .single();
 
@@ -84,6 +127,5 @@ export async function ensureProfileForUser(
     throw new Error(`Could not ensure profile for ${user.id}: ${error.message}`);
   }
 
-  return data;
+  return normalizeProfileRow(data);
 }
-

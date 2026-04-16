@@ -6,8 +6,8 @@ import { redirect } from "next/navigation";
 import { ensureProfileForUser, requireCurrentUser } from "@/server/auth";
 import { joinGroupByInviteCode } from "@/server/groups";
 
-function redirectToDashboardError(message: string): never {
-  redirect(`/dashboard?error=${encodeURIComponent(message)}`);
+function redirectToJoinGroupError(message: string): never {
+  redirect(`/groups/join?error=${encodeURIComponent(message)}`);
 }
 
 export async function joinGroupByInviteAction(formData: FormData) {
@@ -19,7 +19,7 @@ export async function joinGroupByInviteAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirectToDashboardError("Enter a valid invite code before joining a group.");
+    redirectToJoinGroupError("Enter a valid invite code before joining a group.");
   }
 
   const result = await joinGroupByInviteCode({
@@ -28,10 +28,11 @@ export async function joinGroupByInviteAction(formData: FormData) {
   });
 
   if (result.status === "not-found") {
-    redirectToDashboardError("That invite code was not found.");
+    redirectToJoinGroupError("That invite code was not found.");
   }
 
   revalidatePath("/dashboard");
+  revalidatePath("/groups/join");
   revalidatePath(`/groups/${result.group.id}`);
 
   const notice =
