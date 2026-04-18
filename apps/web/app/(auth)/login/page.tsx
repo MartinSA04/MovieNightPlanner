@@ -1,4 +1,4 @@
-import { Panel, SectionHeading } from "@movie-night/ui";
+import { Panel, SectionHeading, buttonVariants, inputClassName } from "@movie-night/ui";
 import { redirect } from "next/navigation";
 import { signInAction, signUpAction } from "./actions";
 import { AppShell } from "@/components/app-shell";
@@ -45,7 +45,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 <span>Email</span>
                 <input
                   required
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-amber-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  className={inputClassName}
                   name="email"
                   type="email"
                 />
@@ -54,13 +54,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 <span>Password</span>
                 <input
                   required
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-amber-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                  className={inputClassName}
                   name="password"
                   type="password"
                 />
               </label>
-              <button className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-amber-300 dark:text-slate-950 dark:hover:bg-amber-200">
-                Sign in
+              <button className={buttonVariants()}>
+                Continue
               </button>
             </form>
           </div>
@@ -79,7 +79,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                   <span>Display name</span>
                   <input
                     required
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-amber-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                    className={inputClassName}
                     name="displayName"
                     type="text"
                   />
@@ -88,7 +88,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                   <span>Email</span>
                   <input
                     required
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-amber-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                    className={inputClassName}
                     name="email"
                     type="email"
                   />
@@ -97,14 +97,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                   <span>Password</span>
                   <input
                     required
-                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-950 outline-none transition focus:border-amber-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                    className={inputClassName}
                     minLength={6}
                     name="password"
                     type="password"
                   />
                 </label>
-                <button className="inline-flex rounded-full bg-amber-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-200">
-                  Create account
+                <button className={buttonVariants()}>
+                  Create
                 </button>
               </form>
             </div>

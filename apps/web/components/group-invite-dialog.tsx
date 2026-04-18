@@ -111,11 +111,11 @@ export function GroupInviteDialog({ inviteCode, inviteLink }: GroupInviteDialogP
 
               <button
                 aria-label="Close invite popup"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 text-slate-600 transition hover:border-slate-900 hover:text-slate-950 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-400 dark:hover:text-white"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 text-slate-600 shadow-sm transition hover:border-slate-900 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-400 dark:hover:bg-slate-900 dark:hover:text-white"
                 onClick={() => setOpen(false)}
                 type="button"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 

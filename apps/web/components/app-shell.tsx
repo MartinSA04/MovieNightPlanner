@@ -40,7 +40,7 @@ export function AppShell({
                   {menu.map((item) => (
                     <Link
                       key={`${item.href}-${item.label}`}
-                      className={`rounded-full px-3 py-1.5 transition ${
+                      className={`inline-flex min-h-11 items-center rounded-full px-4 py-2.5 font-medium transition ${
                         item.active
                           ? "bg-slate-900 text-white dark:bg-amber-300 dark:text-slate-950"
                           : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"

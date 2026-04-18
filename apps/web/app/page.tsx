@@ -13,8 +13,8 @@ export default async function HomePage() {
           title: "Groups"
         },
         {
-          description: "Create new events from the Events view where they belong.",
-          title: "Events"
+          description: "Create new movie nights from the Movie nights view where they belong.",
+          title: "Movie nights"
         },
         {
           description: "Set country and streaming services from user settings.",
@@ -28,7 +28,7 @@ export default async function HomePage() {
         },
         {
           description: "Collect suggestions, vote together, and settle on one movie.",
-          title: "Events"
+          title: "Movie nights"
         },
         {
           description: "See which streaming services your group already has.",
@@ -51,7 +51,7 @@ export default async function HomePage() {
               </h2>
               <p className="max-w-2xl text-sm text-slate-600 dark:text-slate-300">
                 {user
-                  ? "Open the app to jump back into your groups, events, and settings."
+                  ? "Open the app to jump back into your groups, movie nights, and settings."
                   : "Create an account, start a group, and keep suggestions, voting, and streaming availability in one place."}
               </p>
             </div>

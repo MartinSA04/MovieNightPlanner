@@ -2,7 +2,8 @@ import {
   canCreateEvent,
   type AddSuggestionInput,
   type CreateEventInput,
-  type EventStatus
+  type EventStatus,
+  type RemoveSuggestionInput
 } from "@movie-night/domain";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient as createSupabaseClient } from "@/lib/supabase/server";
@@ -58,6 +59,10 @@ export interface EventPageData {
 export interface AddSuggestionResult {
   status: "added" | "already-exists";
   suggestion: EventSuggestionView;
+}
+
+export interface RemoveSuggestionResult {
+  status: "removed";
 }
 
 interface SuggestionRecord {
@@ -163,11 +168,11 @@ export async function createEventForGroup(
     .maybeSingle();
 
   if (membershipError) {
-    throw new Error(`Could not verify event permissions: ${membershipError.message}`);
+    throw new Error(`Could not verify movie night permissions: ${membershipError.message}`);
   }
 
   if (!membership || !canCreateEvent(membership.role)) {
-    throw new Error("Only group owners and admins can create events.");
+    throw new Error("Only group owners and admins can create movie nights.");
   }
 
   const admin = createAdminClient();
@@ -187,7 +192,7 @@ export async function createEventForGroup(
     .single();
 
   if (eventError) {
-    throw new Error(`Could not create event: ${eventError.message}`);
+    throw new Error(`Could not create movie night: ${eventError.message}`);
   }
 
   return normalizeEventRecord(event);
@@ -206,11 +211,11 @@ export async function addSuggestionToEvent(
     .maybeSingle();
 
   if (eventError) {
-    throw new Error(`Could not load event for suggestion: ${eventError.message}`);
+    throw new Error(`Could not load movie night for suggestion: ${eventError.message}`);
   }
 
   if (!event) {
-    throw new Error("Event not found.");
+    throw new Error("Movie night not found.");
   }
 
   const { data: membership, error: membershipError } = await supabase
@@ -225,11 +230,11 @@ export async function addSuggestionToEvent(
   }
 
   if (!membership) {
-    throw new Error("Only group members can add movies to this event.");
+    throw new Error("Only group members can add movies to this movie night.");
   }
 
   if (!canAddSuggestions(event.status)) {
-    throw new Error("Movies can only be added while the event is in planning or open.");
+    throw new Error("Movies can only be added while the movie night is in planning or open.");
   }
 
   await getMovieDetails(input.tmdbMovieId);
@@ -257,7 +262,7 @@ export async function addSuggestionToEvent(
         .maybeSingle<SuggestionRecord>();
 
       if (existingError || !existingSuggestion) {
-        throw new Error("That movie is already in the event.");
+        throw new Error("That movie is already in this movie night.");
       }
 
       const [existingView] = await buildSuggestionViews([existingSuggestion], admin);
@@ -279,6 +284,80 @@ export async function addSuggestionToEvent(
   };
 }
 
+export async function removeSuggestionFromEvent(
+  input: RemoveSuggestionInput & {
+    actorUserId: string;
+  }
+): Promise<RemoveSuggestionResult> {
+  const supabase = await createSupabaseClient();
+  const { data: event, error: eventError } = await supabase
+    .from("movie_night_events")
+    .select("id, group_id, status")
+    .eq("id", input.eventId)
+    .maybeSingle();
+
+  if (eventError) {
+    throw new Error(`Could not load movie night for removal: ${eventError.message}`);
+  }
+
+  if (!event) {
+    throw new Error("Movie night not found.");
+  }
+
+  const { data: membership, error: membershipError } = await supabase
+    .from("group_members")
+    .select("role")
+    .eq("group_id", event.group_id)
+    .eq("user_id", input.actorUserId)
+    .maybeSingle();
+
+  if (membershipError) {
+    throw new Error(`Could not verify removal permissions: ${membershipError.message}`);
+  }
+
+  if (!membership) {
+    throw new Error("Only group members can remove movies from this movie night.");
+  }
+
+  if (!canAddSuggestions(event.status)) {
+    throw new Error("Movies can only be removed while the movie night is in planning or open.");
+  }
+
+  const { data: suggestion, error: suggestionError } = await supabase
+    .from("movie_suggestions")
+    .select("id, event_id, suggested_by_user_id")
+    .eq("id", input.suggestionId)
+    .eq("event_id", input.eventId)
+    .maybeSingle();
+
+  if (suggestionError) {
+    throw new Error(`Could not load movie for removal: ${suggestionError.message}`);
+  }
+
+  if (!suggestion) {
+    throw new Error("Movie not found.");
+  }
+
+  if (suggestion.suggested_by_user_id !== input.actorUserId) {
+    throw new Error("You can only remove movies you added.");
+  }
+
+  const admin = createAdminClient();
+  const { error: deleteError } = await admin
+    .from("movie_suggestions")
+    .delete()
+    .eq("id", input.suggestionId)
+    .eq("event_id", input.eventId);
+
+  if (deleteError) {
+    throw new Error(`Could not remove movie: ${deleteError.message}`);
+  }
+
+  return {
+    status: "removed"
+  };
+}
+
 export async function loadEventPageData(eventId: string): Promise<EventPageData | null> {
   const user = await requireCurrentUser();
   const supabase = await createSupabaseClient();
@@ -293,7 +372,7 @@ export async function loadEventPageData(eventId: string): Promise<EventPageData 
     .maybeSingle();
 
   if (eventError) {
-    throw new Error(`Could not load event: ${eventError.message}`);
+    throw new Error(`Could not load movie night: ${eventError.message}`);
   }
 
   if (!event) {
@@ -338,11 +417,11 @@ export async function loadEventPageData(eventId: string): Promise<EventPageData 
   ]);
 
   if (membershipError) {
-    throw new Error(`Could not load actor event role: ${membershipError.message}`);
+    throw new Error(`Could not load actor movie night role: ${membershipError.message}`);
   }
 
   if (groupError) {
-    throw new Error(`Could not load event group: ${groupError.message}`);
+    throw new Error(`Could not load movie night group: ${groupError.message}`);
   }
 
   if (memberCountError) {
@@ -354,11 +433,11 @@ export async function loadEventPageData(eventId: string): Promise<EventPageData 
   }
 
   if (creatorError) {
-    throw new Error(`Could not load event creator profile: ${creatorError.message}`);
+    throw new Error(`Could not load movie night creator profile: ${creatorError.message}`);
   }
 
   if (suggestionsError) {
-    throw new Error(`Could not load event suggestions: ${suggestionsError.message}`);
+    throw new Error(`Could not load movie night suggestions: ${suggestionsError.message}`);
   }
 
   if (!membership || !group) {

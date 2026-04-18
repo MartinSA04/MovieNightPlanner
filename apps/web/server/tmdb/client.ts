@@ -8,6 +8,7 @@ import type {
   WatchProviderDto
 } from "@movie-night/domain";
 import { searchMoviesSchema } from "@movie-night/domain";
+import { unstable_cache } from "next/cache";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getTmdbEnv, hasTmdbEnv } from "@/lib/env";
@@ -491,24 +492,33 @@ export function isTmdbConfigured() {
   return hasTmdbEnv();
 }
 
+const loadCachedMovieSearchResults = unstable_cache(
+  async (query: string, page: number) => {
+    const response = await fetchTmdb("/search/movie", tmdbMovieSearchResponseSchema, {
+      revalidateSeconds: TMDB_SEARCH_REVALIDATE_SECONDS,
+      searchParams: {
+        include_adult: "false",
+        language: "en-US",
+        page: String(page),
+        query
+      }
+    });
+
+    const normalizedResults = response.results
+      .slice(0, 8)
+      .map((movie) => normalizeTmdbMovieSearchResult(movie));
+
+    await cacheMovieSearchResults(normalizedResults, response.results.slice(0, 8));
+
+    return normalizedResults;
+  },
+  ["tmdb-search-results"],
+  { revalidate: TMDB_SEARCH_REVALIDATE_SECONDS }
+);
+
 export async function searchMovies(input: SearchMoviesInput): Promise<TmdbMovieSearchResultDto[]> {
   const parsed = searchMoviesSchema.parse(input);
-
-  const response = await fetchTmdb("/search/movie", tmdbMovieSearchResponseSchema, {
-    revalidateSeconds: TMDB_SEARCH_REVALIDATE_SECONDS,
-    searchParams: {
-      include_adult: "false",
-      language: "en-US",
-      page: String(parsed.page),
-      query: parsed.query
-    }
-  });
-
-  const normalizedResults = response.results
-    .slice(0, 8)
-    .map((movie) => normalizeTmdbMovieSearchResult(movie));
-
-  await cacheMovieSearchResults(normalizedResults, response.results.slice(0, 8));
+  const normalizedResults = await loadCachedMovieSearchResults(parsed.query, parsed.page);
 
   const regionCode = parsed.regionCode;
 

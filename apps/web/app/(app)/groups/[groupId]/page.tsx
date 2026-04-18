@@ -2,8 +2,6 @@ import Link from "next/link";
 import { canCreateEvent } from "@movie-night/domain";
 import {
   Panel,
-  Pill,
-  SectionHeading,
   buttonVariants,
   cn,
   inputClassName
@@ -39,10 +37,10 @@ function getGroupView(view?: string): GroupView {
 
 function viewLinkClass(active: boolean) {
   return cn(
-    "rounded-full px-4 py-2 text-sm font-medium transition",
+    "px-5 py-3 text-[15px] font-medium transition",
     active
-      ? "bg-slate-950 text-white dark:bg-amber-300 dark:text-slate-950"
-      : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+      ? "relative z-10 -mb-px rounded-t-[22px] rounded-b-none border border-slate-200 border-b-transparent bg-slate-50/80 text-slate-950 after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px after:bg-slate-50/80 dark:border-slate-800 dark:border-b-transparent dark:bg-slate-900/70 dark:text-white dark:after:bg-slate-900/70"
+      : "rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
   );
 }
 
@@ -55,6 +53,10 @@ function formatDate(value: string | null) {
     dateStyle: "medium",
     timeStyle: "short"
   }).format(new Date(value));
+}
+
+function formatLabel(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 export default async function GroupDetailPage({ params, searchParams }: GroupDetailPageProps) {
@@ -79,35 +81,23 @@ export default async function GroupDetailPage({ params, searchParams }: GroupDet
         <div className="space-y-6 p-5 sm:p-6">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">
-                    {activeView === "new-event" ? "Create event" : data.group.name}
-                  </h1>
-                  <Pill tone={data.actorRole === "owner" ? "neutral" : "muted"}>{data.actorRole}</Pill>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {activeView === "new-event" ? <Pill tone="muted">{data.group.name}</Pill> : null}
-                  <Pill tone="accent">{getRegionLabel(data.group.countryCode)}</Pill>
-                </div>
+              <div className="space-y-2">
+                <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">
+                  {activeView === "new-event" ? "Create movie night" : data.group.name}
+                </h1>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  {activeView === "new-event"
+                    ? `${data.group.name} / ${getRegionLabel(data.group.countryCode)}`
+                    : `${formatLabel(data.actorRole)} / ${getRegionLabel(data.group.countryCode)}`}
+                </p>
               </div>
 
-              {activeView !== "new-event" ? (
-                <nav className="flex flex-wrap gap-2">
-                  <Link className={viewLinkClass(activeView === "events")} href={eventsHref}>
-                    Events
-                  </Link>
-                  <Link className={viewLinkClass(activeView === "members")} href={membersHref}>
-                    Members
-                  </Link>
-                </nav>
-              ) : null}
             </div>
 
             <div className="flex flex-wrap gap-2">
               {activeView === "new-event" ? (
                 <Link className={buttonVariants({ size: "sm", variant: "secondary" })} href={eventsHref}>
-                  Back to events
+                  Back to movie nights
                 </Link>
               ) : null}
               {activeView !== "new-event" ? (
@@ -117,59 +107,92 @@ export default async function GroupDetailPage({ params, searchParams }: GroupDet
           </div>
         </div>
 
-        <div className="border-t border-slate-200 px-5 py-6 dark:border-slate-800 sm:px-6">
-          {activeView === "events" ? (
-            <section className="space-y-5 rounded-[32px] bg-slate-50/80 p-4 dark:bg-slate-900/70 sm:p-5">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div className="space-y-2">
-                  <SectionHeading>Events</SectionHeading>
-                  <h2 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
-                    {data.events.length === 1 ? "1 event" : `${data.events.length} events`}
-                  </h2>
-                </div>
+        <div className="px-5 pb-6 pt-0 sm:px-6">
+          {activeView !== "new-event" ? (
+            <div className="space-y-0">
+              <nav className="relative z-10 flex flex-wrap gap-2 px-5 sm:px-6">
+                <Link className={viewLinkClass(activeView === "events")} href={eventsHref}>
+                  Movie nights
+                </Link>
+                <Link className={viewLinkClass(activeView === "members")} href={membersHref}>
+                  Members
+                </Link>
+              </nav>
 
-                {canManageEvents ? (
-                  <Link className={buttonVariants({ size: "sm" })} href={createEventHref}>
-                    Create event
-                  </Link>
-                ) : null}
-              </div>
+              {activeView === "events" ? (
+                <section className="space-y-5 rounded-[32px] border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/70 sm:p-5">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {data.events.length === 1 ? "1 total" : `${data.events.length} total`}
+                    </p>
 
-              {data.events.length > 0 ? (
-                <div className="grid gap-3">
-                  {data.events.map((event) => (
-                    <div key={event.id} className="rounded-[28px] bg-white px-5 py-5 dark:bg-slate-950">
-                      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                        <div className="space-y-2">
-                          <h3 className="text-xl font-semibold text-slate-950 dark:text-white">
-                            {event.title}
-                          </h3>
-                          <div className="flex flex-wrap gap-2">
-                            <Pill tone="muted">{event.status}</Pill>
-                            <Pill tone="muted">{formatDate(event.scheduledFor)}</Pill>
+                    {canManageEvents ? (
+                      <Link className={buttonVariants({ size: "sm" })} href={createEventHref}>
+                        Create
+                      </Link>
+                    ) : null}
+                  </div>
+
+                  {data.events.length > 0 ? (
+                    <div className="grid gap-3">
+                      {data.events.map((event) => (
+                        <div key={event.id} className="rounded-[28px] bg-white px-5 py-5 dark:bg-slate-950">
+                          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="space-y-2">
+                              <h3 className="text-xl font-semibold text-slate-950 dark:text-white">
+                                {event.title}
+                              </h3>
+                              <p className="text-sm text-slate-500 dark:text-slate-400">
+                                {formatLabel(event.status)} / {formatDate(event.scheduledFor)}
+                              </p>
+                            </div>
+
+                            <Link
+                              className={buttonVariants({ size: "sm" })}
+                              href={`/events/${event.id}?view=suggestions`}
+                            >
+                              Open
+                            </Link>
                           </div>
                         </div>
-
-                        <Link
-                          className={buttonVariants({ size: "sm" })}
-                          href={`/events/${event.id}?view=suggestions`}
-                        >
-                          Open event
-                        </Link>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-[28px] bg-white px-5 py-10 text-center dark:bg-slate-950">
-                  <p className="text-lg font-semibold text-slate-950 dark:text-white">No events yet</p>
-                </div>
-              )}
-            </section>
+                  ) : (
+                    <div className="rounded-[28px] bg-white px-5 py-10 text-center dark:bg-slate-950">
+                      <p className="text-lg font-semibold text-slate-950 dark:text-white">No movie nights yet</p>
+                    </div>
+                  )}
+                </section>
+              ) : null}
+
+              {activeView === "members" ? (
+                <section className="space-y-5 rounded-[32px] border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/70 sm:p-5">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    {data.members.length === 1 ? "1 total" : `${data.members.length} total`}
+                  </p>
+
+                  <div className="grid gap-3">
+                    {data.members.map((member) => (
+                      <div key={member.userId} className="rounded-[28px] bg-white px-5 py-5 dark:bg-slate-950">
+                        <div className="space-y-2">
+                          <p className="text-lg font-semibold text-slate-950 dark:text-white">
+                            {member.displayName}
+                          </p>
+                          <p className="text-sm text-slate-600 dark:text-slate-300">{member.email}</p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">
+                            {formatLabel(member.role)} / Joined {formatDate(member.joinedAt)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+            </div>
           ) : null}
 
           {activeView === "new-event" ? (
-            <section className="rounded-[32px] bg-slate-50/80 p-4 dark:bg-slate-900/70 sm:p-5">
+            <section className="rounded-[32px] border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/70 sm:p-5">
               <div className="max-w-3xl">
                 {canManageEvents ? (
                   <form action={createEventAction} className="grid gap-4">
@@ -207,46 +230,17 @@ export default async function GroupDetailPage({ params, searchParams }: GroupDet
                         <input className={inputClassName} name="scheduledFor" type="datetime-local" />
                       </label>
                     </div>
-                    <button className={buttonVariants()}>Create event</button>
+                    <button className={buttonVariants()}>Create</button>
                   </form>
                 ) : (
                   <div className="rounded-[28px] bg-white px-4 py-4 text-sm text-slate-600 dark:bg-slate-950 dark:text-slate-300">
-                    Only owners and admins can create events.
+                    Only owners and admins can create movie nights.
                   </div>
                 )}
               </div>
             </section>
           ) : null}
 
-          {activeView === "members" ? (
-            <section className="space-y-5 rounded-[32px] bg-slate-50/80 p-4 dark:bg-slate-900/70 sm:p-5">
-              <div className="space-y-2">
-                <SectionHeading>Members</SectionHeading>
-                <h2 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
-                  {data.members.length === 1 ? "1 member" : `${data.members.length} members`}
-                </h2>
-              </div>
-
-              <div className="grid gap-3">
-                {data.members.map((member) => (
-                  <div key={member.userId} className="rounded-[28px] bg-white px-5 py-5 dark:bg-slate-950">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                      <div className="space-y-1">
-                        <p className="text-lg font-semibold text-slate-950 dark:text-white">
-                          {member.displayName}
-                        </p>
-                        <p className="text-sm text-slate-600 dark:text-slate-300">{member.email}</p>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Pill tone={member.role === "owner" ? "neutral" : "muted"}>{member.role}</Pill>
-                        <Pill tone="muted">{formatDate(member.joinedAt)}</Pill>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ) : null}
         </div>
       </Panel>
     </div>

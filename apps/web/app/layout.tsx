@@ -1,6 +1,19 @@
 import type { Metadata } from "next";
+import { Manrope, Space_Grotesk } from "next/font/google";
 import { FeedbackToast } from "@/components/feedback-toast";
 import "./globals.css";
+
+const bodyFont = Manrope({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-body"
+});
+
+const headingFont = Space_Grotesk({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-heading"
+});
 
 export const metadata: Metadata = {
   title: "Movie Night Planner",
@@ -29,7 +42,11 @@ export default function RootLayout({
   `;
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${bodyFont.variable} ${headingFont.variable}`}
+    >
       <body>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <FeedbackToast />

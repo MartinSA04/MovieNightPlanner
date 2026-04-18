@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Panel, Pill, SectionHeading } from "@movie-night/ui";
+import { Panel, SectionHeading, buttonVariants } from "@movie-night/ui";
 import { notFound } from "next/navigation";
 import { joinGroupByInviteAction } from "@/app/actions/group-invite-actions";
 import { AppShell } from "@/components/app-shell";
@@ -28,7 +28,7 @@ export default async function InvitePage({ params }: InvitePageProps) {
     <AppShell
       actions={
         <Link
-          className="inline-flex rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-400 dark:hover:text-white"
+          className={buttonVariants({ size: "sm", variant: "secondary" })}
           href={data.isAuthenticated ? authenticatedHref : "/login"}
         >
           {data.isAuthenticated ? `Open ${authenticatedLabel.toLowerCase()}` : "Login"}
@@ -45,13 +45,6 @@ export default async function InvitePage({ params }: InvitePageProps) {
       title={`Join ${data.group.name}`}
     >
       <Panel className="space-y-6">
-        <div className="flex flex-wrap gap-2">
-          <Pill tone="accent">{data.memberCount} members</Pill>
-          <Pill tone={data.currentUserMembershipRole ? "neutral" : "muted"}>
-            {data.currentUserMembershipRole ?? "Invite"}
-          </Pill>
-        </div>
-
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="space-y-5">
             <div className="space-y-2">
@@ -63,28 +56,28 @@ export default async function InvitePage({ params }: InvitePageProps) {
 
             {data.currentUserMembershipRole ? (
               <Link
-                className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-amber-300 dark:text-slate-950 dark:hover:bg-amber-200"
+                className={buttonVariants()}
                 href={`/groups/${data.group.id}`}
               >
-                Open group
+                Open
               </Link>
             ) : data.isAuthenticated ? (
               <form action={joinGroupByInviteAction}>
                 <input name="inviteCode" type="hidden" value={data.group.inviteCode} />
-                <button className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-amber-300 dark:text-slate-950 dark:hover:bg-amber-200">
-                  Join {data.group.name}
+                <button className={buttonVariants()}>
+                  Join
                 </button>
               </form>
             ) : (
               <div className="flex flex-wrap gap-3">
                 <Link
-                  className="inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-amber-300 dark:text-slate-950 dark:hover:bg-amber-200"
+                  className={buttonVariants()}
                   href={`/login?next=${encodeURIComponent(nextPath)}`}
                 >
                   Sign in
                 </Link>
                 <Link
-                  className="inline-flex rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-400 dark:hover:text-white"
+                  className={buttonVariants({ variant: "secondary" })}
                   href={`/login?next=${encodeURIComponent(nextPath)}`}
                 >
                   Create account
@@ -97,16 +90,17 @@ export default async function InvitePage({ params }: InvitePageProps) {
             <div className="space-y-5">
               <div className="space-y-2">
                 <SectionHeading>Group</SectionHeading>
-                <div className="grid gap-3 text-sm text-slate-700 dark:text-slate-300">
-                  <div className="rounded-2xl bg-white px-4 py-3 dark:bg-slate-950">
-                    <span className="font-medium text-slate-950 dark:text-white">Invite code:</span>{" "}
+                <div className="rounded-2xl bg-white px-4 py-4 dark:bg-slate-950">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Invite code</p>
+                  <p className="mt-1 text-base font-semibold text-slate-950 dark:text-white">
                     {data.group.inviteCode}
-                  </div>
-                  <div className="rounded-2xl bg-white px-4 py-3 dark:bg-slate-950">
-                    <span className="font-medium text-slate-950 dark:text-white">Region:</span>{" "}
-                    {getRegionLabel(data.group.countryCode)}
-                  </div>
+                  </p>
                 </div>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {data.currentUserMembershipRole
+                    ? `You already have access to this group as ${data.currentUserMembershipRole}.`
+                    : `${data.memberCount} members / ${getRegionLabel(data.group.countryCode)}`}
+                </p>
               </div>
             </div>
           </div>

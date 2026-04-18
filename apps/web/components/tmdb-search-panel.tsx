@@ -5,12 +5,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { TmdbMovieSearchResultDto } from "@movie-night/domain";
 import {
-  Pill,
   SectionHeading,
   buttonVariants,
   cn,
   inputClassName
 } from "@movie-night/ui";
+import { MoviePoster } from "@/components/movie-poster";
 
 interface TmdbSearchPanelProps {
   canAddMovies: boolean;
@@ -57,7 +57,6 @@ export function TmdbSearchPanel({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<TmdbMovieSearchResultDto[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [pendingMovieId, setPendingMovieId] = useState<number | null>(null);
@@ -71,7 +70,6 @@ export function TmdbSearchPanel({
 
     if (trimmedQuery.length < 2) {
       setError("Search with at least 2 characters.");
-      setNotice(null);
       setHasSearched(false);
       setResults([]);
       return;
@@ -79,7 +77,6 @@ export function TmdbSearchPanel({
 
     setIsLoading(true);
     setError(null);
-    setNotice(null);
 
     try {
       const response = await fetch(
@@ -105,7 +102,6 @@ export function TmdbSearchPanel({
   async function handleAddMovie(tmdbMovieId: number) {
     setPendingMovieId(tmdbMovieId);
     setError(null);
-    setNotice(null);
 
     try {
       const response = await fetch(`/api/events/${eventId}/suggestions`, {
@@ -125,7 +121,6 @@ export function TmdbSearchPanel({
       setAddedMovieIds((current) =>
         current.includes(tmdbMovieId) ? current : [...current, tmdbMovieId]
       );
-      setNotice(payload.status === "already-exists" ? "Movie already added." : "Movie added.");
       router.refresh();
     } catch {
       setError("Could not add movie suggestion.");
@@ -141,16 +136,11 @@ export function TmdbSearchPanel({
         "space-y-5 rounded-[32px] bg-slate-50/80 p-4 dark:bg-slate-900/70 sm:p-5"
       )}
     >
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-2">
-          <SectionHeading>Search</SectionHeading>
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
-            Search TMDb
-          </h2>
-        </div>
-        <Pill tone={canAddMovies ? "accent" : "muted"}>
-          {canAddMovies ? "Planning open" : "Suggestions locked"}
-        </Pill>
+      <div className="space-y-2">
+        <SectionHeading>Search</SectionHeading>
+        <h2 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
+          Search TMDb
+        </h2>
       </div>
 
       {!enabled ? (
@@ -175,16 +165,10 @@ export function TmdbSearchPanel({
             />
           </div>
           <button className={buttonVariants()} disabled={!canSearch}>
-            {isLoading ? "Searching" : "Search"}
+            {isLoading ? "Finding" : "Find"}
           </button>
         </form>
       )}
-
-      {notice ? (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
-          {notice}
-        </div>
-      ) : null}
 
       {error ? (
         <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
@@ -194,7 +178,7 @@ export function TmdbSearchPanel({
 
       {!canAddMovies ? (
         <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 dark:bg-slate-950 dark:text-slate-300">
-          Suggestions are locked for this event.
+          Suggestions are locked for this movie night.
         </div>
       ) : null}
 
@@ -208,9 +192,9 @@ export function TmdbSearchPanel({
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <SectionHeading>Results</SectionHeading>
-            <Pill tone="muted">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               {results.length === 1 ? "1 result" : `${results.length} results`}
-            </Pill>
+            </p>
           </div>
 
           <div className="grid gap-3">
@@ -226,70 +210,76 @@ export function TmdbSearchPanel({
 
               return (
                 <div key={result.tmdbMovieId} className="rounded-[28px] bg-white p-5 dark:bg-slate-950">
-                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-xl font-semibold text-slate-950 dark:text-white">
-                            {result.title}
-                          </h3>
-                          {getReleaseYear(result.releaseDate) ? (
-                            <Pill tone="muted">{getReleaseYear(result.releaseDate)}</Pill>
+                  <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex gap-4 sm:gap-5">
+                      <MoviePoster posterPath={result.posterPath ?? null} size="search" title={result.title} />
+
+                      <div className="min-w-0 space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-baseline gap-2">
+                            <h3 className="text-xl font-semibold text-slate-950 dark:text-white">
+                              {result.title}
+                            </h3>
+                            {getReleaseYear(result.releaseDate) ? (
+                              <span className="text-sm text-slate-500 dark:text-slate-400">
+                                {getReleaseYear(result.releaseDate)}
+                              </span>
+                            ) : null}
+                          </div>
+
+                          {result.originalTitle && result.originalTitle !== result.title ? (
+                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                              {result.originalTitle}
+                            </p>
                           ) : null}
                         </div>
 
-                        {result.originalTitle && result.originalTitle !== result.title ? (
-                          <p className="text-sm text-slate-500 dark:text-slate-400">
-                            {result.originalTitle}
+                        {result.overview ? (
+                          <p className="max-w-3xl text-sm leading-6 text-slate-700 dark:text-slate-300">
+                            {result.overview}
                           </p>
                         ) : null}
-                      </div>
 
-                      {result.overview ? (
-                        <p className="max-w-3xl text-sm leading-6 text-slate-700 dark:text-slate-300">
-                          {result.overview}
-                        </p>
-                      ) : null}
-
-                      <div className="grid gap-3 sm:grid-cols-3">
-                        <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
-                          <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                            Stream
-                          </p>
-                          <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
-                            {formatProviderNames(flatrateNames)}
-                          </p>
-                        </div>
-                        <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
-                          <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                            Rent
-                          </p>
-                          <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
-                            {formatProviderNames(rentNames)}
-                          </p>
-                        </div>
-                        <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
-                          <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                            Buy
-                          </p>
-                          <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
-                            {formatProviderNames(buyNames)}
-                          </p>
+                        <div className="grid gap-3 sm:grid-cols-3">
+                          <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
+                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                              Stream
+                            </p>
+                            <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                              {formatProviderNames(flatrateNames)}
+                            </p>
+                          </div>
+                          <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
+                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                              Rent
+                            </p>
+                            <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                              {formatProviderNames(rentNames)}
+                            </p>
+                          </div>
+                          <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
+                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                              Buy
+                            </p>
+                            <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                              {formatProviderNames(buyNames)}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex shrink-0 flex-wrap items-center gap-2 xl:flex-col xl:items-end">
-                      <Pill tone={flatrateNames.length > 0 ? "accent" : "muted"}>
-                        {flatrateNames.length > 0 ? "Included stream" : "No included stream"}
-                      </Pill>
+                    <div className="flex shrink-0 flex-wrap items-center gap-2 lg:flex-col lg:items-end">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {flatrateNames.length > 0 ? "Included with subscription" : "No included stream"}
+                      </p>
                       <button
                         className={buttonVariants({ size: "sm" })}
                         disabled={!canAddMovies || isAdded || isPending}
                         onClick={() => void handleAddMovie(result.tmdbMovieId)}
                         type="button"
                       >
-                        {isPending ? "Adding" : isAdded ? "Added" : "Add movie"}
+                        {isPending ? "Adding" : isAdded ? "Added" : "Add"}
                       </button>
                     </div>
                   </div>

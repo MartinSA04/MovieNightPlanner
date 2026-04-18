@@ -25,6 +25,7 @@ html.dark {
 html {
   min-height: 100%;
   background: var(--background);
+  font-synthesis: none;
 }
 
 body {
@@ -33,8 +34,13 @@ body {
   color: var(--foreground);
   background: linear-gradient(180deg, #faf8f4 0%, #f3efe7 100%);
   font-family:
+    var(--font-body),
     "Avenir Next",
+    "Segoe UI Variable",
     "Segoe UI",
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
     sans-serif;
 }
 
@@ -48,13 +54,25 @@ html.dark body {
 h1,
 h2,
 h3,
-h4 {
+h4,
+h5,
+h6 {
   font-family:
-    "Iowan Old Style",
-    "Palatino Linotype",
-    "Book Antiqua",
-    Georgia,
-    serif;
+    var(--font-heading),
+    "Avenir Next",
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    sans-serif;
+}
+
+em,
+i,
+cite,
+dfn,
+var,
+address {
+  font-style: normal;
 }
 
 a {

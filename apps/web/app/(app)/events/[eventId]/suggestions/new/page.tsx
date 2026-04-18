@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Panel, Pill, buttonVariants } from "@movie-night/ui";
+import { Panel, buttonVariants } from "@movie-night/ui";
 import { notFound } from "next/navigation";
 import { TmdbSearchPanel } from "@/components/tmdb-search-panel";
 import { getRegionLabel } from "@/lib/regions";
@@ -27,16 +27,13 @@ export default async function NewSuggestionPage({ params }: NewSuggestionPagePro
       <Panel className="overflow-hidden p-0">
         <div className="space-y-5 p-5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">
-                  Add movie
-                </h1>
-                <Pill tone="muted">{data.event.title}</Pill>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Pill tone="accent">{getRegionLabel(data.event.regionCode)}</Pill>
-              </div>
+            <div className="space-y-2">
+              <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">
+                Add movie
+              </h1>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                {data.event.title} / {getRegionLabel(data.event.regionCode)}
+              </p>
             </div>
 
             <Link

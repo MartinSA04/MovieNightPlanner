@@ -1,4 +1,4 @@
-import { Panel, Pill } from "@movie-night/ui";
+import { Panel } from "@movie-night/ui";
 import { UserSettingsForm } from "@/components/user-settings-form";
 import { getRegionLabel } from "@/lib/regions";
 import { loadUserSettingsData } from "@/server/settings";
@@ -11,28 +11,23 @@ export default async function SettingsPage() {
       <Panel className="min-h-0 overflow-hidden p-0 md:flex md:min-h-0 md:flex-1 md:flex-col">
         <div className="space-y-6 p-5 sm:p-6">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">
-                  Settings
-                </h1>
-                <Pill tone="accent">{getRegionLabel(data.profile.country_code)}</Pill>
-              </div>
-              <div className="space-y-1">
-                <p className="text-lg font-semibold text-slate-950 dark:text-white">
-                  {data.profile.display_name}
-                </p>
-                <p className="text-sm text-slate-600 dark:text-slate-300">{data.profile.email}</p>
-              </div>
+            <div className="space-y-2">
+              <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">
+                Settings
+              </h1>
+              <p className="text-lg font-semibold text-slate-950 dark:text-white">
+                {data.profile.display_name}
+              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                {data.profile.email} / {getRegionLabel(data.profile.country_code)}
+              </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Pill tone="muted">
-                {data.selectedServiceIds.length === 1
-                  ? "1 service saved"
-                  : `${data.selectedServiceIds.length} services saved`}
-              </Pill>
-            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {data.selectedServiceIds.length === 1
+                ? "1 service saved"
+                : `${data.selectedServiceIds.length} services saved`}
+            </p>
           </div>
         </div>
 

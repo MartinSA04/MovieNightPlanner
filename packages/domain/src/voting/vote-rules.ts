@@ -32,7 +32,7 @@ export function upsertVote(input: UpsertVoteInput): VoteDto[] {
   }
 
   if (input.eventStatus !== "open") {
-    throw new VoteRuleError("event_closed", "Votes can only be changed while the event is open.");
+    throw new VoteRuleError("event_closed", "Votes can only be changed while the movie night is open.");
   }
 
   const withoutExistingVote = input.existingVotes.filter(
@@ -48,4 +48,3 @@ export function tallyVotes(votes: VoteDto[]): Record<string, number> {
     return totals;
   }, {});
 }
-

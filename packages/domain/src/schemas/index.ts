@@ -34,6 +34,11 @@ export const addSuggestionSchema = z.object({
   note: z.string().trim().max(280).optional()
 });
 
+export const removeSuggestionSchema = z.object({
+  eventId: z.string().uuid(),
+  suggestionId: z.string().uuid()
+});
+
 export const searchMoviesSchema = z.object({
   page: z.coerce.number().int().min(1).max(5).default(1),
   query: z.string().trim().min(2).max(100),
@@ -54,6 +59,7 @@ export type CreateGroupInput = z.infer<typeof createGroupSchema>;
 export type JoinGroupByInviteInput = z.infer<typeof joinGroupByInviteSchema>;
 export type CreateEventInput = z.infer<typeof createEventSchema>;
 export type AddSuggestionInput = z.infer<typeof addSuggestionSchema>;
+export type RemoveSuggestionInput = z.infer<typeof removeSuggestionSchema>;
 export type CastVoteInput = z.infer<typeof castVoteSchema>;
 export type SearchMoviesInput = z.infer<typeof searchMoviesSchema>;
 export type UpdateUserSettingsInput = z.infer<typeof updateUserSettingsSchema>;

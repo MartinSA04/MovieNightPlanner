@@ -48,7 +48,7 @@ export async function createEventAction(formData: FormData) {
     redirectToGroup(
       groupId,
       "error",
-      "Create an event with a title, region, and optional valid schedule.",
+      "Create a movie night with a title, region, and optional valid schedule.",
       "new-event"
     );
   }
@@ -60,9 +60,9 @@ export async function createEventAction(formData: FormData) {
     });
 
     revalidatePath(`/groups/${groupId}`);
-    redirect(`/events/${event.id}?view=suggestions&notice=${encodeURIComponent("Event created.")}`);
+    redirect(`/events/${event.id}?view=suggestions&notice=${encodeURIComponent("Movie night created.")}`);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Could not create event.";
+    const message = error instanceof Error ? error.message : "Could not create movie night.";
     redirectToGroup(groupId, "error", message, "new-event");
   }
 }

@@ -4,7 +4,6 @@ import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { Check } from "lucide-react";
 import {
-  Pill,
   SectionHeading,
   buttonVariants,
   cn,
@@ -192,17 +191,13 @@ export function UserSettingsForm({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-2">
             <SectionHeading>Streaming services</SectionHeading>
-            <div className="flex flex-wrap gap-2">
-              <Pill tone="accent">{countryCode}</Pill>
-              <Pill tone="muted">
-                {selectedServiceIds.size === 1
-                  ? "1 selected"
-                  : `${selectedServiceIds.size} selected`}
-              </Pill>
-              <Pill tone="muted">
-                {services.length === 1 ? "1 service" : `${services.length} services`}
-              </Pill>
-            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              {selectedServiceIds.size === 1
+                ? "1 selected"
+                : `${selectedServiceIds.size} selected`}{" "}
+              / {services.length === 1 ? "1 service" : `${services.length} services`} /{" "}
+              {countryCode}
+            </p>
           </div>
 
           {!tmdbConfigured ? (
@@ -309,7 +304,7 @@ export function UserSettingsForm({
       </div>
 
       <button className={buttonVariants()} disabled={isLoadingServices}>
-        {isLoadingServices ? "Loading services" : "Save settings"}
+        {isLoadingServices ? "Loading services" : "Save"}
       </button>
     </form>
   );

@@ -13,7 +13,7 @@ import {
   Settings2,
   Users
 } from "lucide-react";
-import { Pill, cn } from "@movie-night/ui";
+import { cn } from "@movie-night/ui";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 interface SidebarGroup {
@@ -36,11 +36,11 @@ const SIDEBAR_GROUPS_OPEN_KEY = "movie-night-sidebar-groups-open";
 
 function navItemClass(active: boolean, collapsed: boolean) {
   return cn(
-    "flex items-center rounded-2xl text-sm transition",
-    collapsed ? "justify-between px-3 py-2.5 lg:justify-center lg:px-2" : "justify-between px-3 py-2.5",
+    "flex min-h-11 items-center rounded-2xl border text-[15px] font-medium shadow-sm transition sm:min-h-12",
+    collapsed ? "justify-between px-3 py-3 lg:justify-center lg:px-2" : "justify-between px-4 py-3",
     active
-      ? "bg-slate-950 text-white dark:bg-amber-300 dark:text-slate-950"
-      : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/80"
+      ? "border-slate-950 bg-slate-950 text-white dark:border-amber-300 dark:bg-amber-300 dark:text-slate-950"
+      : "border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800/80"
   );
 }
 
@@ -135,11 +135,11 @@ export function AppSidebar({ groups, profile }: AppSidebarProps) {
             <ThemeToggle />
             <button
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-              className="hidden h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white/90 text-slate-700 transition hover:border-slate-900 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-400 dark:hover:text-white lg:inline-flex"
+              className="hidden h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white/90 text-slate-700 shadow-sm transition hover:border-slate-900 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-400 dark:hover:bg-slate-800 dark:hover:text-white lg:inline-flex"
               onClick={toggleCollapsed}
               type="button"
             >
-              {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+              {collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
             </button>
           </div>
         </div>
@@ -270,9 +270,6 @@ export function AppSidebar({ groups, profile }: AppSidebarProps) {
                               {group.countryCode}
                             </span>
                           </span>
-                          <Pill className="lg:hidden" tone={group.role === "owner" ? "neutral" : "muted"}>
-                            {group.role}
-                          </Pill>
                         </>
                       ) : (
                         <>
@@ -282,9 +279,6 @@ export function AppSidebar({ groups, profile }: AppSidebarProps) {
                               {group.countryCode}
                             </span>
                           </span>
-                          <Pill tone={group.role === "owner" ? "neutral" : "muted"}>
-                            {group.role}
-                          </Pill>
                         </>
                       )}
                     </Link>

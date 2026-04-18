@@ -324,7 +324,7 @@ export async function loadGroupPageData(groupId: string): Promise<GroupPageData 
   }
 
   if (eventsError) {
-    throw new Error(`Could not load group events: ${eventsError.message}`);
+    throw new Error(`Could not load group movie nights: ${eventsError.message}`);
   }
 
   if (!membership || !group) {
