@@ -5,10 +5,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { TmdbMovieSearchResultDto } from "@movie-night/domain";
 import {
-  Panel,
   Pill,
   SectionHeading,
   buttonVariants,
+  cn,
   inputClassName
 } from "@movie-night/ui";
 
@@ -135,7 +135,12 @@ export function TmdbSearchPanel({
   }
 
   return (
-    <Panel id="search" tone="muted" className="space-y-5">
+    <section
+      id="search"
+      className={cn(
+        "space-y-5 rounded-[32px] bg-slate-50/80 p-4 dark:bg-slate-900/70 sm:p-5"
+      )}
+    >
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-2">
           <SectionHeading>Search</SectionHeading>
@@ -294,6 +299,6 @@ export function TmdbSearchPanel({
           </div>
         </div>
       ) : null}
-    </Panel>
+    </section>
   );
 }

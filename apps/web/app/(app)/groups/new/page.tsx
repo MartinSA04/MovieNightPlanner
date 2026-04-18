@@ -9,44 +9,48 @@ export default async function NewGroupPage() {
   const profile = await ensureProfileForUser(user);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <Panel className="space-y-6">
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">
-              Create group
-            </h1>
-            <Pill tone="accent">{getRegionLabel(profile.country_code)}</Pill>
+    <div className="mx-auto max-w-4xl">
+      <Panel className="overflow-hidden p-0">
+        <div className="space-y-6 p-5 sm:p-6">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">
+                Create group
+              </h1>
+              <Pill tone="accent">{getRegionLabel(profile.country_code)}</Pill>
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-300">{profile.display_name}</p>
           </div>
-          <p className="text-sm text-slate-600 dark:text-slate-300">{profile.display_name}</p>
         </div>
-      </Panel>
 
-      <Panel tone="muted" className="max-w-2xl">
-        <form action={createGroupAction} className="grid gap-4">
-          <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-            <span>Group name</span>
-            <input
-              required
-              className={inputClassName}
-              maxLength={80}
-              name="name"
-              placeholder="Friday Film Club"
-              type="text"
-            />
-          </label>
+        <div className="border-t border-slate-200 px-5 py-6 dark:border-slate-800 sm:px-6">
+          <div className="max-w-2xl rounded-[32px] bg-slate-50/80 p-4 dark:bg-slate-900/70 sm:p-5">
+            <form action={createGroupAction} className="grid gap-4">
+              <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span>Group name</span>
+                <input
+                  required
+                  className={inputClassName}
+                  maxLength={80}
+                  name="name"
+                  placeholder="Friday Film Club"
+                  type="text"
+                />
+              </label>
 
-          <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-            <span>Country code</span>
-            <RegionSelect
-              className={inputClassName}
-              defaultValue={profile.country_code}
-              name="countryCode"
-            />
-          </label>
+              <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <span>Country code</span>
+                <RegionSelect
+                  className={inputClassName}
+                  defaultValue={profile.country_code}
+                  name="countryCode"
+                />
+              </label>
 
-          <button className={buttonVariants()}>Create group</button>
-        </form>
+              <button className={buttonVariants()}>Create group</button>
+            </form>
+          </div>
+        </div>
       </Panel>
     </div>
   );

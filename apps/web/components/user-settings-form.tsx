@@ -164,7 +164,7 @@ export function UserSettingsForm({
   }
 
   return (
-    <form action={updateUserSettingsAction} className="flex h-full min-h-0 flex-col gap-6">
+    <form action={updateUserSettingsAction} className="space-y-6">
       <div className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
         <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-slate-300">
           <span>Country code</span>
@@ -188,7 +188,7 @@ export function UserSettingsForm({
         </label>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-2">
             <SectionHeading>Streaming services</SectionHeading>
@@ -225,9 +225,9 @@ export function UserSettingsForm({
             Loading services…
           </div>
         ) : filteredServices.length > 0 ? (
-          <div className="h-[clamp(16rem,48vh,30rem)] overflow-hidden rounded-[28px] border border-slate-200 bg-slate-50/70 p-3 pr-2 dark:border-slate-800 dark:bg-slate-900/50">
-            <div className="h-full overflow-y-auto pr-1">
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="relative h-72 overflow-hidden rounded-[28px] border border-slate-200 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-900/50 md:h-80">
+            <div className="absolute inset-0 overflow-y-auto p-3 pr-2">
+              <div className="grid gap-3 pr-1 sm:grid-cols-2 xl:grid-cols-3">
                 {filteredServices.map((service) => {
                   const checked = selectedServiceIds.has(service.id);
 
