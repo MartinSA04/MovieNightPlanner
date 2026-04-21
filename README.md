@@ -10,7 +10,6 @@ Movie Night Planner is a collaborative planning app for small groups that want t
 * Supabase
 * TMDb API
 * Zod
-* TanStack Query
 * Vitest and Playwright
 
 ## Repository Layout
@@ -106,10 +105,16 @@ corepack pnpm setup:local-env
 The current implementation includes:
 
 * local Supabase auth with profile bootstrap
-* dedicated group creation and invite-join pages, plus a dedicated user settings page for country and streaming preferences
-* a dark-mode app shell with collapsible sidebar navigation for settings, group actions, and group navigation
-* group detail pages with separate events, members, and create-event views
-* event detail pages with dedicated TMDb suggestion search screens and add-to-event suggestions
+* dedicated create-group, join-group, invite, and user settings flows
+* a top-navigation authenticated app shell with dashboard views for `Groups`, `Movie nights`, and `Upcoming`
+* group detail pages with movie-night, member, and create-movie-night views
+* movie-night detail pages with a leaderboard-style movie list and a separate details view
+* TMDb search with posters plus server-side caching in `unstable_cache`, `movie_cache`, and `watch_provider_cache`
+* ranked voting with up to 3 ordered picks worth 3, 2, and 1 points
+* a vote modal for editing picks at any time while a movie night is in `draft` or `open`
+* movie suggestion removal for the user who added the suggestion
+* owner-only group deletion
+* group and dashboard previews that surface the current top-voted movie plus upcoming schedule emphasis
 * invite landing pages that route new or returning members into the app
 * a shared domain package for permissions, validation, voting, and provider matching
 * TMDb server utilities that normalize payloads and cache movie/provider data in Supabase
@@ -117,6 +122,6 @@ The current implementation includes:
 
 Implementation should continue in phases:
 
-1. Vote casting, event status transitions, and winner selection
-2. Provider matching badges against group subscriptions
+1. Movie-night status transitions and explicit winner selection
+2. Subscription-aware provider matching surfaced directly in the movie-night UI
 3. Comments, realtime updates, and broader authenticated e2e coverage

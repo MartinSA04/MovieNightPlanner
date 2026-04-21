@@ -2,7 +2,7 @@
 
 ## Summary
 
-Movie Night Planner helps small groups move from "what should we watch?" to a clear winner with less friction. The MVP combines group planning, movie suggestions, voting, and region-aware streaming availability.
+Movie Night Planner helps small groups move from "what should we watch?" to a clear shortlist with less friction. The current product combines group planning, movie-night scheduling, TMDb-backed movie suggestions, ranked voting, and region-aware streaming availability.
 
 ## Primary Users
 
@@ -15,11 +15,11 @@ Movie Night Planner helps small groups move from "what should we watch?" to a cl
 * authenticate users
 * manage user profile and streaming subscriptions
 * create groups and invite members
-* create movie night events
+* create movie nights
 * search TMDb and submit suggestions
-* support ranked ballots with 3 points for 1st, 2 for 2nd, and 1 for 3rd
-* show provider badges based on group subscriptions and region
-* select an event winner
+* support ranked votes with 3 points for 1st, 2 for 2nd, and 1 for 3rd
+* show region-aware provider availability during movie search
+* keep dashboard and group views focused on upcoming movie nights and current leaders
 
 ## Out Of Scope
 
@@ -30,31 +30,38 @@ Movie Night Planner helps small groups move from "what should we watch?" to a cl
 * heavy analytics
 * full chat product
 
+## Deferred Work
+
+* explicit winner selection and movie-night lock flow
+* subscription-aware provider matching surfaced in the movie-night leaderboard
+* comments and realtime updates
+
 ## Core Workflow
 
 1. User joins or creates a group.
-2. Owner or admin creates a movie night event.
+2. Owner or admin creates a movie night.
 3. Members add movie suggestions from TMDb.
-4. Members rank up to 3 movie picks and can change that order while the movie night is in planning or open.
-5. The UI shows provider badges using event region plus group subscriptions.
-6. The event is locked and a winner is selected.
+4. Members open the vote modal and rank up to 3 movie picks in order.
+5. The movie list is shown as a leaderboard using 3-2-1 scoring.
+6. Group and dashboard views surface the current top-voted movie and upcoming schedule.
 
 ## Key Screens
 
 * landing page
 * login and signup
 * invite acceptance page
-* sidebar-first app navigation
+* top-nav dashboard with `Groups`, `Movie nights`, and `Upcoming`
 * create group
 * join group
 * group detail
-* event detail
+* movie night detail
+* add movie search
 * profile and settings
-* streaming services settings
 
 ## UX Principles
 
-* keep the group context obvious
-* make voting state legible at a glance
-* separate subscription availability from rent/buy availability
+* keep the active group or movie-night context obvious
+* make upcoming schedule and current vote leader legible at a glance
+* keep voting in a focused modal rather than inlining ranking controls across the movie list
+* use a clean tokenized layout with one dominant content surface per page
 * avoid burying permission rules inside presentation components

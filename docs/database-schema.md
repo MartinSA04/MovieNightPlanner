@@ -8,7 +8,7 @@ User profile data keyed by Supabase auth user id.
 
 ### `streaming_services`
 
-Known watch providers mapped to TMDb provider ids.
+Known watch providers mapped to TMDb provider ids. This table is refreshed from TMDb for the settings flow and referenced by `user_streaming_services`.
 
 ### `user_streaming_services`
 
@@ -16,7 +16,7 @@ Join table for user subscriptions with unique `(user_id, streaming_service_id)`.
 
 ### `groups`
 
-Persistent social units with an owner, invite code, and default country.
+Persistent social units with an owner, invite code, and default country. Deleting a group cascades through memberships and movie-night data.
 
 ### `group_members`
 
@@ -24,21 +24,24 @@ Membership table with roles `owner`, `admin`, and `member`. Unique `(group_id, u
 
 ### `movie_night_events`
 
-Event records with region, lifecycle status, and optional winning suggestion.
+Movie-night records with region, lifecycle status, and optional winning suggestion. `winning_suggestion_id` exists in the schema but explicit winner selection is not yet surfaced in the UI.
 
 ### `movie_suggestions`
 
-Suggestions tied to an event. Unique `(event_id, tmdb_movie_id)` to prevent duplicates.
+Suggestions tied to a movie night. Unique `(event_id, tmdb_movie_id)` prevents duplicate movies within the same movie night.
 
 ### `votes`
 
-Ranked picks tied to an event. One row per ranked pick with unique
-`(event_id, user_id, choice_rank)` and unique `(event_id, user_id, suggestion_id)` so a user can
-rank up to 3 different movies.
+Ranked picks tied to a movie night. One row is stored per ranked choice, with:
+
+* unique `(event_id, user_id, choice_rank)`
+* unique `(event_id, user_id, suggestion_id)`
+
+This allows a user to save up to 3 different ordered picks.
 
 ### `comments`
 
-Lightweight event discussion entries.
+Lightweight movie-night discussion entries. Present in the schema but not yet exposed in the current UI.
 
 ### `movie_cache`
 
@@ -62,8 +65,8 @@ RLS should deny by default. Policies should be based on:
 
 * authenticated user ownership for profiles and subscriptions
 * group membership for reads
-* owner/admin role checks for group and event management
-* draft or open event state for suggestions and votes
+* owner/admin role checks for group and movie-night management
+* draft or open movie-night state for suggestions and votes
 
 Membership helper functions used inside RLS policies should run as `security definer` so
 group-based checks do not recurse back into `group_members` policy evaluation.
@@ -71,5 +74,7 @@ group-based checks do not recurse back into `group_members` policy evaluation.
 ## Cache Strategy
 
 * keep raw TMDb payload fragments for debugging
-* store normalized provider subsets for app use
+* store normalized movie data in `movie_cache`
+* store region-specific provider data in `watch_provider_cache`
 * refresh watch-provider entries periodically
+* sync provider catalogs into `streaming_services` for the settings UI

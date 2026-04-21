@@ -7,80 +7,118 @@
 * expected failures should return typed, UI-friendly errors
 * unexpected failures should be logged centrally
 
-## Planned Server Actions
+## Current Server Actions
 
-### `createGroup`
+### `createGroupAction`
 
-Creates a group, assigns the owner, and creates the initial membership row.
+Validates `name` and `countryCode`, creates the group, inserts the owner membership, revalidates the dashboard shell, and redirects to the new group page.
 
-### `deleteGroup`
+### `joinGroupByInviteAction`
 
-Deletes a group for the current owner and cascades related movie nights, suggestions, and votes.
+Validates the invite code, joins the current user as a member when needed, revalidates dashboard data, and redirects to the target group with a notice.
 
-### `joinGroupByInvite`
+### `createEventAction`
 
-Accepts an invite code and adds the current user to the target group.
+Validates the movie-night form, checks owner/admin permissions, creates the movie night, revalidates related pages, and redirects to `/events/:id?view=suggestions`.
 
-### `updateGroup`
+### `updateUserSettingsAction`
 
-Updates group metadata for owner/admin roles.
+Validates `countryCode` and selected provider ids, replaces `user_streaming_services`, updates `profiles.country_code`, best-effort syncs auth metadata, and redirects back to settings.
 
-### `createEvent`
+## Current Route Handlers
 
-Creates a movie night event for an authorized group.
+### `GET /api/tmdb/search`
 
-### `updateEventStatus`
+Auth required. Accepts:
 
-Transitions event state between draft, open, locked, completed, and cancelled.
+* `query`: 2 to 100 chars
+* `page`: 1 to 5
+* `regionCode`: optional 2-letter code
 
-### `searchMovies`
-
-Calls TMDb server-side, validates query input, caches normalized movie/provider data, and
-returns normalized search results.
-
-### `addSuggestion`
-
-Adds a TMDb movie suggestion to an event while preventing duplicates.
-
-### `castVote`
-
-Creates or replaces the current user's ranked ballot with up to 3 picks while the movie night is
-in planning or open.
-
-### `removeVote`
-
-Clears the current user's ranked ballot while the movie night is in planning or open.
-
-### `selectWinner`
-
-Persists the winning suggestion on a locked or completed event.
-
-### `updateUserSettings`
-
-Updates the current user's country code and replaces the selected streaming services.
-
-## Planned Route Handlers
+Returns normalized TMDb search results, including region-specific watch-provider data when `regionCode` is present.
 
 ### `GET /api/settings/providers`
 
-Requires authentication, fetches the movie watch-provider catalog from TMDb for a given
-country code, syncs those providers into `streaming_services`, and returns a normalized list
-for the settings UI.
+Auth required. Accepts `countryCode` and returns the available streaming-service catalog for the settings page. When TMDb is configured, the provider catalog is refreshed and synced into `streaming_services` before returning.
+
+### `POST /api/events/:eventId/suggestions`
+
+Auth required. Accepts:
+
+```ts
+{
+  tmdbMovieId: number;
+  note?: string;
+}
+```
+
+Adds a movie suggestion for the current user while the movie night is in `draft` or `open`.
+
+Responses:
+
+* `201` with `{ status: "added", suggestion }`
+* `200` with `{ status: "already-exists", suggestion }`
+* `400` with `{ error: string }`
+
+### `DELETE /api/events/:eventId/suggestions/:suggestionId`
+
+Auth required. Removes a suggestion only when:
+
+* the current user is a member of the group
+* the movie night is still `draft` or `open`
+* the suggestion was added by the current user
+
+Returns `{ status: "removed" }` or `{ error: string }`.
+
+### `PUT /api/events/:eventId/votes`
+
+Auth required. Accepts:
+
+```ts
+{
+  suggestionIds: string[]; // ordered 1st through 3rd, max 3
+}
+```
+
+Replaces the current user's vote set for the movie night. Empty arrays are allowed and clear the user's picks.
+
+Returns:
+
+```ts
+{
+  status: "updated";
+  voteCount: number;
+}
+```
+
+### `DELETE /api/groups/:groupId`
+
+Auth required. Deletes a group only when the current user is the owner. Group deletion cascades to memberships, movie nights, suggestions, and votes through foreign keys.
+
+Returns `{ status: "deleted" }` or `{ error: string }`.
+
+## Deferred Endpoints
+
+The following behaviors are still product-level goals but do not have live endpoints yet:
+
+* updating group metadata
+* explicit movie-night status transitions
+* winner selection persistence
+* comments
 
 ## Error Shape
 
-Suggested application error contract:
+Most current route handlers return a minimal JSON error shape:
 
 ```ts
-type AppActionError = {
-  code: string;
-  message: string;
-  fieldErrors?: Record<string, string[]>;
+type RouteError = {
+  error: string;
 };
 ```
 
 ## Response Guidance
 
 * return normalized domain objects, not raw DB rows when avoidable
-* keep provider matching as a dedicated result object
+* keep route-level responses small and UI-oriented
+* revalidate affected dashboard, group, and movie-night paths after writes
 * do not expose service-role operations to the client
