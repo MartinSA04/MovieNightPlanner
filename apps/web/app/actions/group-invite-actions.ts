@@ -31,6 +31,7 @@ export async function joinGroupByInviteAction(formData: FormData) {
     redirectToJoinGroupError("That invite code was not found.");
   }
 
+  revalidatePath("/dashboard", "layout");
   revalidatePath("/dashboard");
   revalidatePath("/groups/join");
   revalidatePath(`/groups/${result.group.id}`);

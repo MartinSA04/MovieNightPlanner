@@ -29,7 +29,9 @@ export async function createGroupAction(formData: FormData) {
     ownerUserId: user.id
   });
 
+  revalidatePath("/dashboard", "layout");
   revalidatePath("/dashboard");
   revalidatePath("/groups/new");
+  revalidatePath(`/groups/${group.id}`);
   redirect(`/groups/${group.id}`);
 }

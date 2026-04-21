@@ -17,7 +17,7 @@ Movie Night Planner helps small groups move from "what should we watch?" to a cl
 * create groups and invite members
 * create movie night events
 * search TMDb and submit suggestions
-* support one vote per user per event
+* support ranked ballots with 3 points for 1st, 2 for 2nd, and 1 for 3rd
 * show provider badges based on group subscriptions and region
 * select an event winner
 
@@ -35,7 +35,7 @@ Movie Night Planner helps small groups move from "what should we watch?" to a cl
 1. User joins or creates a group.
 2. Owner or admin creates a movie night event.
 3. Members add movie suggestions from TMDb.
-4. Members cast or change a single vote while the event is open.
+4. Members rank up to 3 movie picks and can change that order while the movie night is in planning or open.
 5. The UI shows provider badges using event region plus group subscriptions.
 6. The event is locked and a winner is selected.
 

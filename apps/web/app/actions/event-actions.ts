@@ -53,16 +53,20 @@ export async function createEventAction(formData: FormData) {
     );
   }
 
+  let event;
+
   try {
-    const event = await createEventForGroup({
+    event = await createEventForGroup({
       ...parsed.data,
       actorUserId: user.id
     });
-
-    revalidatePath(`/groups/${groupId}`);
-    redirect(`/events/${event.id}?view=suggestions&notice=${encodeURIComponent("Movie night created.")}`);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not create movie night.";
     redirectToGroup(groupId, "error", message, "new-event");
   }
+
+  revalidatePath("/dashboard", "layout");
+  revalidatePath(`/groups/${groupId}`);
+  revalidatePath(`/events/${event.id}`);
+  redirect(`/events/${event.id}?view=suggestions`);
 }

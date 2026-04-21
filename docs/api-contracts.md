@@ -13,6 +13,10 @@
 
 Creates a group, assigns the owner, and creates the initial membership row.
 
+### `deleteGroup`
+
+Deletes a group for the current owner and cascades related movie nights, suggestions, and votes.
+
 ### `joinGroupByInvite`
 
 Accepts an invite code and adds the current user to the target group.
@@ -40,11 +44,12 @@ Adds a TMDb movie suggestion to an event while preventing duplicates.
 
 ### `castVote`
 
-Creates or replaces the current user's vote while the event is open.
+Creates or replaces the current user's ranked ballot with up to 3 picks while the movie night is
+in planning or open.
 
 ### `removeVote`
 
-Clears the current user's vote while the event is open.
+Clears the current user's ranked ballot while the movie night is in planning or open.
 
 ### `selectWinner`
 

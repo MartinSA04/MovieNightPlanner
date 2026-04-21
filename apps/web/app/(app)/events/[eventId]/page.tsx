@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { Panel, buttonVariants, cn } from "@movie-night/ui";
 import { notFound } from "next/navigation";
-import { MoviePoster } from "@/components/movie-poster";
-import { RemoveSuggestionButton } from "@/components/remove-suggestion-button";
+import { EventSuggestionsBoard } from "@/components/event-suggestions-board";
+import { EventVoteDialog } from "@/components/event-vote-dialog";
+import { getEventStatusLabel } from "@/lib/event-status";
 import { getRegionLabel } from "@/lib/regions";
 import { loadEventPageData } from "@/server/events";
 
@@ -47,10 +48,6 @@ function formatDate(value: string | null) {
   }).format(new Date(value));
 }
 
-function formatLabel(value: string) {
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
 export default async function EventDetailPage({
   params,
   searchParams
@@ -65,6 +62,14 @@ export default async function EventDetailPage({
   }
 
   const canAddMovies = ["draft", "open"].includes(data.event.status);
+  const canVote = ["draft", "open"].includes(data.event.status);
+  const eventHeaderMeta = [
+    data.group.name,
+    getRegionLabel(data.event.regionCode),
+    getEventStatusLabel(data.event.status)
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(" / ");
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -77,7 +82,7 @@ export default async function EventDetailPage({
                   {data.event.title}
                 </h1>
                 <p className="text-sm text-slate-600 dark:text-slate-300">
-                  {data.group.name} / {getRegionLabel(data.event.regionCode)} / {formatLabel(data.event.status)}
+                  {eventHeaderMeta}
                 </p>
               </div>
 
@@ -116,72 +121,38 @@ export default async function EventDetailPage({
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     {data.suggestions.length === 1 ? "1 total" : `${data.suggestions.length} total`}
+                    {data.stats.voteCount > 0
+                      ? data.stats.voteCount === 1
+                        ? " / 1 vote"
+                        : ` / ${data.stats.voteCount} votes`
+                      : ""}
                   </p>
 
-                  {canAddMovies ? (
-                    <Link
-                      className={buttonVariants({ size: "sm" })}
-                      href={`/events/${data.event.id}/suggestions/new`}
-                    >
-                      Add
-                    </Link>
-                  ) : null}
+                  <div className="flex flex-wrap gap-2">
+                    <EventVoteDialog
+                      canVote={canVote}
+                      eventId={data.event.id}
+                      suggestions={data.suggestions}
+                    />
+
+                    {canAddMovies ? (
+                      <Link
+                        className={buttonVariants({ size: "sm" })}
+                        href={`/events/${data.event.id}/suggestions/new`}
+                      >
+                        Add
+                      </Link>
+                    ) : null}
+                  </div>
                 </div>
 
                 {data.suggestions.length > 0 ? (
-                  <div className="grid gap-3">
-                    {data.suggestions.map((suggestion) => (
-                      <div key={suggestion.id} className="rounded-[28px] bg-white px-5 py-5 dark:bg-slate-950">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                          <div className="flex gap-4 sm:gap-5">
-                            <MoviePoster posterPath={suggestion.posterPath} title={suggestion.title} />
-
-                            <div className="min-w-0 space-y-3">
-                              <div className="flex flex-wrap items-baseline gap-2">
-                                <h3 className="text-xl font-semibold text-slate-950 dark:text-white">
-                                  {suggestion.title}
-                                </h3>
-                                {suggestion.releaseDate ? (
-                                  <span className="text-sm text-slate-500 dark:text-slate-400">
-                                    {suggestion.releaseDate.slice(0, 4)}
-                                  </span>
-                                ) : null}
-                              </div>
-
-                              {suggestion.originalTitle && suggestion.originalTitle !== suggestion.title ? (
-                                <p className="text-sm text-slate-500 dark:text-slate-400">
-                                  {suggestion.originalTitle}
-                                </p>
-                              ) : null}
-
-                              {suggestion.overview ? (
-                                <p className="text-sm leading-6 text-slate-700 dark:text-slate-300">
-                                  {suggestion.overview}
-                                </p>
-                              ) : null}
-
-                              <p className="text-sm text-slate-500 dark:text-slate-400">
-                                {suggestion.suggestedByDisplayName} / {formatDate(suggestion.createdAt)}
-                              </p>
-
-                              {suggestion.note ? (
-                                <p className="text-sm text-slate-600 dark:text-slate-300">
-                                  {suggestion.note}
-                                </p>
-                              ) : null}
-                            </div>
-                          </div>
-
-                          {canAddMovies && suggestion.suggestedByUserId === data.profile.id ? (
-                            <RemoveSuggestionButton
-                              eventId={data.event.id}
-                              suggestionId={suggestion.id}
-                            />
-                          ) : null}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <EventSuggestionsBoard
+                    canRemoveMovies={canAddMovies}
+                    currentUserId={data.profile.id}
+                    eventId={data.event.id}
+                    suggestions={data.suggestions}
+                  />
                 ) : (
                   <div className="rounded-[28px] bg-white px-5 py-10 text-center dark:bg-slate-950">
                     <p className="text-lg font-semibold text-slate-950 dark:text-white">No movies yet</p>

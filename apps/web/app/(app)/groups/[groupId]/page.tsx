@@ -8,7 +8,10 @@ import {
 } from "@movie-night/ui";
 import { notFound } from "next/navigation";
 import { createEventAction } from "@/app/actions/event-actions";
+import { DeleteGroupButton } from "@/components/delete-group-button";
 import { GroupInviteDialog } from "@/components/group-invite-dialog";
+import { MoviePoster } from "@/components/movie-poster";
+import { getEventStatusLabel } from "@/lib/event-status";
 import { RegionSelect } from "@/components/region-select";
 import { publicEnv } from "@/lib/env";
 import { getRegionLabel } from "@/lib/regions";
@@ -59,6 +62,20 @@ function formatLabel(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
+function getReleaseYear(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  return value.slice(0, 4);
+}
+
+function formatEventMeta(status: Parameters<typeof getEventStatusLabel>[0], scheduledFor: string | null) {
+  return [getEventStatusLabel(status), formatDate(scheduledFor)]
+    .filter((value): value is string => Boolean(value))
+    .join(" / ");
+}
+
 export default async function GroupDetailPage({ params, searchParams }: GroupDetailPageProps) {
   const { groupId } = await params;
   const feedback = (await searchParams) ?? {};
@@ -70,6 +87,7 @@ export default async function GroupDetailPage({ params, searchParams }: GroupDet
   }
 
   const canManageEvents = canCreateEvent(data.actorRole);
+  const canDeleteGroup = data.actorRole === "owner";
   const eventsHref = `/groups/${data.group.id}?view=events`;
   const membersHref = `/groups/${data.group.id}?view=members`;
   const createEventHref = `/groups/${data.group.id}?view=new-event`;
@@ -102,6 +120,9 @@ export default async function GroupDetailPage({ params, searchParams }: GroupDet
               ) : null}
               {activeView !== "new-event" ? (
                 <GroupInviteDialog inviteCode={data.group.inviteCode} inviteLink={inviteLink} />
+              ) : null}
+              {activeView !== "new-event" && canDeleteGroup ? (
+                <DeleteGroupButton groupId={data.group.id} />
               ) : null}
             </div>
           </div>
@@ -136,15 +157,50 @@ export default async function GroupDetailPage({ params, searchParams }: GroupDet
                   {data.events.length > 0 ? (
                     <div className="grid gap-3">
                       {data.events.map((event) => (
-                        <div key={event.id} className="rounded-[28px] bg-white px-5 py-5 dark:bg-slate-950">
+                        <div
+                          key={event.id}
+                          className={cn(
+                            "rounded-[28px] border px-5 py-5",
+                            event.isUpcomingHighlight
+                              ? "border-amber-200 bg-amber-50/80 dark:border-amber-800/60 dark:bg-amber-950/30"
+                              : "border-transparent bg-white dark:bg-slate-950"
+                          )}
+                        >
                           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                             <div className="space-y-2">
-                              <h3 className="text-xl font-semibold text-slate-950 dark:text-white">
-                                {event.title}
-                              </h3>
+                              <div className="space-y-1">
+                                {event.isUpcomingHighlight ? (
+                                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
+                                    Up next
+                                  </p>
+                                ) : null}
+                                <h3 className="text-xl font-semibold text-slate-950 dark:text-white">
+                                  {event.title}
+                                </h3>
+                              </div>
                               <p className="text-sm text-slate-500 dark:text-slate-400">
-                                {formatLabel(event.status)} / {formatDate(event.scheduledFor)}
+                                {formatEventMeta(event.status, event.scheduledFor)}
                               </p>
+                              {event.topVote ? (
+                                <div className="flex items-center gap-3 pt-1">
+                                  <MoviePoster
+                                    className="w-10 rounded-[14px]"
+                                    posterPath={event.topVote.posterPath}
+                                    title={event.topVote.title}
+                                  />
+                                  <div className="min-w-0">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
+                                      Top vote
+                                    </p>
+                                    <p className="truncate text-sm text-slate-700 dark:text-slate-300">
+                                      {event.topVote.title}
+                                      {getReleaseYear(event.topVote.releaseDate)
+                                        ? ` / ${getReleaseYear(event.topVote.releaseDate)}`
+                                        : ""}
+                                    </p>
+                                  </div>
+                                </div>
+                              ) : null}
                             </div>
 
                             <Link

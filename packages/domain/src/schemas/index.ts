@@ -45,9 +45,16 @@ export const searchMoviesSchema = z.object({
   regionCode: countryCodeSchema.optional()
 });
 
+const rankedSuggestionIdsSchema = z
+  .array(z.string().uuid())
+  .max(3)
+  .refine((value) => new Set(value).size === value.length, {
+    message: "Pick up to 3 different movies."
+  });
+
 export const castVoteSchema = z.object({
   eventId: z.string().uuid(),
-  suggestionId: z.string().uuid()
+  suggestionIds: rankedSuggestionIdsSchema
 });
 
 export const updateUserSettingsSchema = z.object({

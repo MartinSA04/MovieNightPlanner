@@ -1,9 +1,15 @@
 import {
+  buildRankedVotes,
+  canUserVote,
   canCreateEvent,
   type AddSuggestionInput,
+  type CastVoteInput,
   type CreateEventInput,
   type EventStatus,
-  type RemoveSuggestionInput
+  getVotePoints,
+  type RemoveSuggestionInput,
+  type VoteDto,
+  type VoteRank
 } from "@movie-night/domain";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient as createSupabaseClient } from "@/lib/supabase/server";
@@ -25,15 +31,21 @@ export interface EventRecordView {
 }
 
 export interface EventSuggestionView {
+  actorVoteRank: VoteRank | null;
+  ballotCount: number;
   createdAt: string;
+  firstChoiceCount: number;
   id: string;
   note: string | null;
   originalTitle: string | null;
   overview: string | null;
+  points: number;
   posterPath: string | null;
   releaseDate: string | null;
+  secondChoiceCount: number;
   suggestedByDisplayName: string;
   suggestedByUserId: string;
+  thirdChoiceCount: number;
   title: string;
   tmdbMovieId: number;
 }
@@ -65,12 +77,26 @@ export interface RemoveSuggestionResult {
   status: "removed";
 }
 
+export interface SetEventVotesResult {
+  status: "updated";
+  voteCount: number;
+}
+
 interface SuggestionRecord {
   created_at: string;
   id: string;
   note: string | null;
   suggested_by_user_id: string;
   tmdb_movie_id: number;
+}
+
+interface VoteRecord {
+  choice_rank?: number | null;
+  created_at: string;
+  id: string;
+  rank?: number | null;
+  suggestion_id: string;
+  user_id: string;
 }
 
 function normalizeEventRecord(record: {
@@ -102,6 +128,96 @@ function normalizeEventRecord(record: {
 
 function canAddSuggestions(status: EventStatus) {
   return status === "draft" || status === "open";
+}
+
+function normalizeVoteRecord(record: VoteRecord, eventId: string): VoteDto {
+  const rawRank = record.choice_rank ?? record.rank;
+
+  if (rawRank !== 1 && rawRank !== 2 && rawRank !== 3) {
+    throw new Error("Movie night votes contain an invalid rank.");
+  }
+
+  return {
+    createdAt: record.created_at,
+    eventId,
+    id: record.id,
+    rank: rawRank,
+    suggestionId: record.suggestion_id,
+    userId: record.user_id
+  };
+}
+
+function buildSuggestionVoteMetrics(
+  suggestions: EventSuggestionView[],
+  votes: VoteDto[],
+  actorUserId: string
+) {
+  const metricsBySuggestionId = new Map(
+    suggestions.map((suggestion) => [
+      suggestion.id,
+      {
+        actorVoteRank: null as VoteRank | null,
+        ballotCount: 0,
+        firstChoiceCount: 0,
+        points: 0,
+        secondChoiceCount: 0,
+        thirdChoiceCount: 0
+      }
+    ])
+  );
+
+  for (const vote of votes) {
+    const metrics = metricsBySuggestionId.get(vote.suggestionId);
+
+    if (!metrics) {
+      continue;
+    }
+
+    metrics.ballotCount += 1;
+    metrics.points += getVotePoints(vote.rank);
+
+    if (vote.rank === 1) {
+      metrics.firstChoiceCount += 1;
+    } else if (vote.rank === 2) {
+      metrics.secondChoiceCount += 1;
+    } else {
+      metrics.thirdChoiceCount += 1;
+    }
+
+    if (
+      vote.userId === actorUserId &&
+      (metrics.actorVoteRank === null || vote.rank < metrics.actorVoteRank)
+    ) {
+      metrics.actorVoteRank = vote.rank;
+    }
+  }
+
+  return metricsBySuggestionId;
+}
+
+function sortSuggestionsByLeaderboard(suggestions: EventSuggestionView[]) {
+  return [...suggestions].sort((left, right) => {
+    if (right.points !== left.points) {
+      return right.points - left.points;
+    }
+
+    if (right.firstChoiceCount !== left.firstChoiceCount) {
+      return right.firstChoiceCount - left.firstChoiceCount;
+    }
+
+    if (right.secondChoiceCount !== left.secondChoiceCount) {
+      return right.secondChoiceCount - left.secondChoiceCount;
+    }
+
+    if (right.thirdChoiceCount !== left.thirdChoiceCount) {
+      return right.thirdChoiceCount - left.thirdChoiceCount;
+    }
+
+    return (
+      left.createdAt.localeCompare(right.createdAt) ||
+      left.title.localeCompare(right.title)
+    );
+  });
 }
 
 async function buildSuggestionViews(
@@ -139,15 +255,21 @@ async function buildSuggestionViews(
     const profile = profilesById.get(row.suggested_by_user_id);
 
     return {
+      actorVoteRank: null,
+      ballotCount: 0,
       createdAt: row.created_at,
+      firstChoiceCount: 0,
       id: row.id,
       note: row.note,
       originalTitle: movie?.original_title ?? null,
       overview: movie?.overview ?? null,
+      points: 0,
       posterPath: movie?.poster_path ?? null,
       releaseDate: movie?.release_date ?? null,
+      secondChoiceCount: 0,
       suggestedByDisplayName: profile?.display_name ?? "Movie fan",
       suggestedByUserId: row.suggested_by_user_id,
+      thirdChoiceCount: 0,
       title: movie?.title ?? `TMDb ${row.tmdb_movie_id}`,
       tmdbMovieId: row.tmdb_movie_id
     };
@@ -358,6 +480,101 @@ export async function removeSuggestionFromEvent(
   };
 }
 
+export async function setEventVotes(
+  input: CastVoteInput & {
+    actorUserId: string;
+  }
+): Promise<SetEventVotesResult> {
+  const supabase = await createSupabaseClient();
+  const { data: event, error: eventError } = await supabase
+    .from("movie_night_events")
+    .select("id, group_id, status")
+    .eq("id", input.eventId)
+    .maybeSingle();
+
+  if (eventError) {
+    throw new Error(`Could not load movie night for voting: ${eventError.message}`);
+  }
+
+  if (!event) {
+    throw new Error("Movie night not found.");
+  }
+
+  const { data: membership, error: membershipError } = await supabase
+    .from("group_members")
+    .select("role")
+    .eq("group_id", event.group_id)
+    .eq("user_id", input.actorUserId)
+    .maybeSingle();
+
+  if (membershipError) {
+    throw new Error(`Could not verify voting permissions: ${membershipError.message}`);
+  }
+
+  if (!membership) {
+    throw new Error("Only group members can vote.");
+  }
+
+  if (!canUserVote({ eventStatus: event.status, isGroupMember: true })) {
+    throw new Error("Votes can only be changed while the movie night is in planning or open.");
+  }
+
+  if (input.suggestionIds.length > 0) {
+    const { data: suggestionRows, error: suggestionError } = await supabase
+      .from("movie_suggestions")
+      .select("id")
+      .eq("event_id", input.eventId)
+      .in("id", input.suggestionIds);
+
+    if (suggestionError) {
+      throw new Error(`Could not validate movie picks: ${suggestionError.message}`);
+    }
+
+    const availableSuggestionIds = new Set((suggestionRows ?? []).map((row) => row.id));
+
+    if (availableSuggestionIds.size !== input.suggestionIds.length) {
+      throw new Error("Pick movies from this movie night only.");
+    }
+  }
+
+  const nextVotes = buildRankedVotes({
+    eventId: input.eventId,
+    suggestionIds: input.suggestionIds,
+    userId: input.actorUserId
+  });
+
+  const admin = createAdminClient();
+  const { error: deleteError } = await admin
+    .from("votes")
+    .delete()
+    .eq("event_id", input.eventId)
+    .eq("user_id", input.actorUserId);
+
+  if (deleteError) {
+    throw new Error(`Could not clear existing picks: ${deleteError.message}`);
+  }
+
+  if (nextVotes.length > 0) {
+    const { error: insertError } = await admin.from("votes").insert(
+      nextVotes.map((vote) => ({
+        choice_rank: vote.rank,
+        event_id: vote.eventId,
+        suggestion_id: vote.suggestionId,
+        user_id: vote.userId
+      }))
+    );
+
+    if (insertError) {
+      throw new Error(`Could not save ranked picks: ${insertError.message}`);
+    }
+  }
+
+  return {
+    status: "updated",
+    voteCount: nextVotes.length
+  };
+}
+
 export async function loadEventPageData(eventId: string): Promise<EventPageData | null> {
   const user = await requireCurrentUser();
   const supabase = await createSupabaseClient();
@@ -384,9 +601,9 @@ export async function loadEventPageData(eventId: string): Promise<EventPageData 
     { data: membership, error: membershipError },
     { data: group, error: groupError },
     { count: memberCount, error: memberCountError },
-    { count: voteCount, error: voteCountError },
     { data: creatorProfile, error: creatorError },
-    { data: suggestionRows, error: suggestionsError }
+    { data: suggestionRows, error: suggestionsError },
+    { data: voteRows, error: votesError }
   ] = await Promise.all([
     supabase
       .from("group_members")
@@ -403,7 +620,6 @@ export async function loadEventPageData(eventId: string): Promise<EventPageData 
       .from("group_members")
       .select("user_id", { count: "exact", head: true })
       .eq("group_id", event.group_id),
-    supabase.from("votes").select("id", { count: "exact", head: true }).eq("event_id", eventId),
     admin
       .from("profiles")
       .select("display_name")
@@ -413,7 +629,11 @@ export async function loadEventPageData(eventId: string): Promise<EventPageData 
       .from("movie_suggestions")
       .select("id, tmdb_movie_id, suggested_by_user_id, note, created_at")
       .eq("event_id", eventId)
-      .order("created_at", { ascending: true })
+      .order("created_at", { ascending: true }),
+    admin
+      .from("votes")
+      .select("*")
+      .eq("event_id", eventId)
   ]);
 
   if (membershipError) {
@@ -428,10 +648,6 @@ export async function loadEventPageData(eventId: string): Promise<EventPageData 
     throw new Error(`Could not load group member count: ${memberCountError.message}`);
   }
 
-  if (voteCountError) {
-    throw new Error(`Could not load vote count: ${voteCountError.message}`);
-  }
-
   if (creatorError) {
     throw new Error(`Could not load movie night creator profile: ${creatorError.message}`);
   }
@@ -440,12 +656,36 @@ export async function loadEventPageData(eventId: string): Promise<EventPageData 
     throw new Error(`Could not load movie night suggestions: ${suggestionsError.message}`);
   }
 
+  if (votesError) {
+    throw new Error(`Could not load movie night votes: ${votesError.message}`);
+  }
+
   if (!membership || !group) {
     return null;
   }
 
-  const suggestions = await buildSuggestionViews((suggestionRows ?? []) as SuggestionRecord[], admin);
+  const normalizedVotes = ((voteRows ?? []) as VoteRecord[]).map((row) =>
+    normalizeVoteRecord(row, eventId)
+  );
+  const suggestionViews = await buildSuggestionViews((suggestionRows ?? []) as SuggestionRecord[], admin);
+  const voteMetricsBySuggestionId = buildSuggestionVoteMetrics(suggestionViews, normalizedVotes, user.id);
+  const suggestions = sortSuggestionsByLeaderboard(
+    suggestionViews.map((suggestion) => {
+      const metrics = voteMetricsBySuggestionId.get(suggestion.id);
+
+      return {
+        ...suggestion,
+        actorVoteRank: metrics?.actorVoteRank ?? null,
+        ballotCount: metrics?.ballotCount ?? 0,
+        firstChoiceCount: metrics?.firstChoiceCount ?? 0,
+        points: metrics?.points ?? 0,
+        secondChoiceCount: metrics?.secondChoiceCount ?? 0,
+        thirdChoiceCount: metrics?.thirdChoiceCount ?? 0
+      };
+    })
+  );
   const normalizedEvent = normalizeEventRecord(event);
+  const ballotCount = new Set(normalizedVotes.map((vote) => vote.userId)).size;
 
   return {
     actorRole: membership.role,
@@ -463,7 +703,7 @@ export async function loadEventPageData(eventId: string): Promise<EventPageData 
     stats: {
       memberCount: memberCount ?? 0,
       suggestionCount: suggestions.length,
-      voteCount: voteCount ?? 0
+      voteCount: ballotCount
     },
     suggestions
   };

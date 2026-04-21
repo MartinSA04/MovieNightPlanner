@@ -1,3 +1,4 @@
+import { getVotePoints, type EventStatus, type VoteRank } from "@movie-night/domain";
 import { createClient as createSupabaseClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -41,9 +42,15 @@ export interface GroupMemberView {
 
 export interface GroupEventPreview {
   id: string;
+  isUpcomingHighlight: boolean;
   scheduledFor: string | null;
-  status: string;
+  status: EventStatus;
   title: string;
+  topVote: {
+    posterPath: string | null;
+    releaseDate: string | null;
+    title: string;
+  } | null;
 }
 
 export interface GroupPageData {
@@ -95,8 +102,48 @@ function normalizeGroupRecord(record: Record<string, unknown>, role: DashboardGr
     inviteCode: typeof record.invite_code === "string" ? record.invite_code : "",
     name: typeof record.name === "string" ? record.name : "Untitled group",
     role
-  };
+    };
 }
+
+interface GroupSuggestionRecord {
+  created_at: string;
+  event_id: string;
+  id: string;
+  tmdb_movie_id: number;
+}
+
+interface GroupEventRecord {
+  created_at: string;
+  id: string;
+  scheduled_for: string | null;
+  status: EventStatus;
+  title: string;
+}
+
+interface GroupVoteRecord {
+  choice_rank?: number | null;
+  event_id: string;
+  id: string;
+  rank?: number | null;
+  suggestion_id: string;
+  user_id: string;
+}
+
+interface GroupSuggestionLeader {
+  createdAt: string;
+  eventId: string;
+  firstChoiceCount: number;
+  id: string;
+  points: number;
+  posterPath: string | null;
+  releaseDate: string | null;
+  secondChoiceCount: number;
+  thirdChoiceCount: number;
+  title: string;
+}
+
+const GROUP_EVENT_STALE_AFTER_MS = 24 * 60 * 60 * 1000;
+const GROUP_EVENT_LIMIT = 6;
 
 async function loadGroupsForUser(userId: string, supabase: Awaited<ReturnType<typeof createSupabaseClient>>) {
   const { data: membershipRows, error: membershipsError } = await supabase
@@ -157,6 +204,232 @@ function mapGroupPreview(record: {
     inviteCode: record.invite_code,
     name: record.name
   };
+}
+
+function normalizeGroupVoteRank(record: GroupVoteRecord): VoteRank {
+  const rawRank = record.choice_rank ?? record.rank;
+
+  if (rawRank !== 1 && rawRank !== 2 && rawRank !== 3) {
+    throw new Error("Movie night votes contain an invalid rank.");
+  }
+
+  return rawRank;
+}
+
+function compareGroupSuggestionLeaders(left: GroupSuggestionLeader, right: GroupSuggestionLeader) {
+  if (right.points !== left.points) {
+    return right.points - left.points;
+  }
+
+  if (right.firstChoiceCount !== left.firstChoiceCount) {
+    return right.firstChoiceCount - left.firstChoiceCount;
+  }
+
+  if (right.secondChoiceCount !== left.secondChoiceCount) {
+    return right.secondChoiceCount - left.secondChoiceCount;
+  }
+
+  if (right.thirdChoiceCount !== left.thirdChoiceCount) {
+    return right.thirdChoiceCount - left.thirdChoiceCount;
+  }
+
+  return left.createdAt.localeCompare(right.createdAt) || left.title.localeCompare(right.title);
+}
+
+function parseGroupEventTime(value: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const timestamp = Date.parse(value);
+
+  return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+function shouldShowGroupEvent(event: GroupEventRecord, now: number) {
+  const scheduledAt = parseGroupEventTime(event.scheduled_for);
+
+  if (scheduledAt === null) {
+    return true;
+  }
+
+  return scheduledAt >= now - GROUP_EVENT_STALE_AFTER_MS;
+}
+
+function getGroupEventSortBucket(event: GroupEventRecord, now: number) {
+  const scheduledAt = parseGroupEventTime(event.scheduled_for);
+
+  if (scheduledAt === null) {
+    return 1;
+  }
+
+  if (scheduledAt >= now) {
+    return 0;
+  }
+
+  return 2;
+}
+
+function compareGroupEvents(left: GroupEventRecord, right: GroupEventRecord, now: number) {
+  const leftBucket = getGroupEventSortBucket(left, now);
+  const rightBucket = getGroupEventSortBucket(right, now);
+
+  if (leftBucket !== rightBucket) {
+    return leftBucket - rightBucket;
+  }
+
+  const leftScheduledAt = parseGroupEventTime(left.scheduled_for);
+  const rightScheduledAt = parseGroupEventTime(right.scheduled_for);
+
+  if (leftBucket === 0 && leftScheduledAt !== null && rightScheduledAt !== null) {
+    return leftScheduledAt - rightScheduledAt;
+  }
+
+  if (leftBucket === 2 && leftScheduledAt !== null && rightScheduledAt !== null) {
+    return rightScheduledAt - leftScheduledAt;
+  }
+
+  return right.created_at.localeCompare(left.created_at) || left.title.localeCompare(right.title);
+}
+
+function buildGroupEventPreviews(
+  events: GroupEventRecord[],
+  topVotesByEventId: Map<string, GroupEventPreview["topVote"]>,
+  now: number
+): GroupEventPreview[] {
+  const visibleEvents = events
+    .filter((event) => shouldShowGroupEvent(event, now))
+    .sort((left, right) => compareGroupEvents(left, right, now))
+    .slice(0, GROUP_EVENT_LIMIT);
+
+  const upcomingHighlightId =
+    visibleEvents.find((event) => {
+      const scheduledAt = parseGroupEventTime(event.scheduled_for);
+      return scheduledAt !== null && scheduledAt >= now;
+    })?.id ?? null;
+
+  return visibleEvents.map((event) => ({
+    id: event.id,
+    isUpcomingHighlight: event.id === upcomingHighlightId,
+    scheduledFor: event.scheduled_for,
+    status: event.status,
+    title: event.title,
+    topVote: topVotesByEventId.get(event.id) ?? null
+  }));
+}
+
+async function loadTopVotesByEventId(
+  eventIds: string[],
+  admin = createAdminClient()
+): Promise<Map<string, GroupEventPreview["topVote"]>> {
+  if (eventIds.length === 0) {
+    return new Map();
+  }
+
+  const [
+    { data: suggestionRows, error: suggestionsError },
+    { data: voteRows, error: votesError }
+  ] = await Promise.all([
+    admin
+      .from("movie_suggestions")
+      .select("id, event_id, tmdb_movie_id, created_at")
+      .in("event_id", eventIds),
+    admin
+      .from("votes")
+      .select("*")
+      .in("event_id", eventIds)
+  ]);
+
+  if (suggestionsError) {
+    throw new Error(`Could not load group movie suggestions: ${suggestionsError.message}`);
+  }
+
+  if (votesError) {
+    throw new Error(`Could not load group movie night votes: ${votesError.message}`);
+  }
+
+  const suggestions = (suggestionRows ?? []) as GroupSuggestionRecord[];
+
+  if (suggestions.length === 0) {
+    return new Map();
+  }
+
+  const movieIds = Array.from(new Set(suggestions.map((suggestion) => suggestion.tmdb_movie_id)));
+  const { data: movieRows, error: movieError } = movieIds.length
+    ? await admin
+        .from("movie_cache")
+        .select("tmdb_movie_id, title, poster_path, release_date")
+        .in("tmdb_movie_id", movieIds)
+    : { data: [], error: null };
+
+  if (movieError) {
+    throw new Error(`Could not load group movie details: ${movieError.message}`);
+  }
+
+  const moviesByMovieId = new Map((movieRows ?? []).map((row) => [row.tmdb_movie_id, row]));
+  const leadersBySuggestionId = new Map<string, GroupSuggestionLeader>();
+  const suggestionIdsByEventId = new Map<string, string[]>();
+
+  for (const suggestion of suggestions) {
+    const movie = moviesByMovieId.get(suggestion.tmdb_movie_id);
+
+    leadersBySuggestionId.set(suggestion.id, {
+      createdAt: suggestion.created_at,
+      eventId: suggestion.event_id,
+      firstChoiceCount: 0,
+      id: suggestion.id,
+      points: 0,
+      posterPath: movie?.poster_path ?? null,
+      releaseDate: movie?.release_date ?? null,
+      secondChoiceCount: 0,
+      thirdChoiceCount: 0,
+      title: movie?.title ?? `TMDb ${suggestion.tmdb_movie_id}`
+    });
+
+    const currentEventSuggestionIds = suggestionIdsByEventId.get(suggestion.event_id) ?? [];
+    currentEventSuggestionIds.push(suggestion.id);
+    suggestionIdsByEventId.set(suggestion.event_id, currentEventSuggestionIds);
+  }
+
+  for (const vote of (voteRows ?? []) as GroupVoteRecord[]) {
+    const leader = leadersBySuggestionId.get(vote.suggestion_id);
+
+    if (!leader) {
+      continue;
+    }
+
+    const rank = normalizeGroupVoteRank(vote);
+    leader.points += getVotePoints(rank);
+
+    if (rank === 1) {
+      leader.firstChoiceCount += 1;
+    } else if (rank === 2) {
+      leader.secondChoiceCount += 1;
+    } else {
+      leader.thirdChoiceCount += 1;
+    }
+  }
+
+  const topVotesByEventId = new Map<string, GroupEventPreview["topVote"]>();
+
+  for (const [eventId, suggestionIds] of suggestionIdsByEventId) {
+    const topLeader = suggestionIds
+      .map((suggestionId) => leadersBySuggestionId.get(suggestionId))
+      .filter((leader): leader is GroupSuggestionLeader => leader !== undefined)
+      .sort(compareGroupSuggestionLeaders)[0];
+
+    if (!topLeader || topLeader.points === 0) {
+      continue;
+    }
+
+    topVotesByEventId.set(eventId, {
+      posterPath: topLeader.posterPath,
+      releaseDate: topLeader.releaseDate,
+      title: topLeader.title
+    });
+  }
+
+  return topVotesByEventId;
 }
 
 export async function loadDashboardData(): Promise<DashboardData> {
@@ -221,6 +494,37 @@ export async function createGroupForOwner(input: {
   }
 
   throw new Error("Could not generate a unique invite code for the new group.");
+}
+
+export async function deleteGroupForOwner(input: {
+  actorUserId: string;
+  groupId: string;
+}) {
+  const supabase = await createSupabaseClient();
+  const { data: group, error: groupError } = await supabase
+    .from("groups")
+    .select("id, owner_user_id")
+    .eq("id", input.groupId)
+    .maybeSingle();
+
+  if (groupError) {
+    throw new Error(`Could not load group for deletion: ${groupError.message}`);
+  }
+
+  if (!group) {
+    throw new Error("Group not found.");
+  }
+
+  if (group.owner_user_id !== input.actorUserId) {
+    throw new Error("Only the group owner can delete this group.");
+  }
+
+  const admin = createAdminClient();
+  const { error: deleteError } = await admin.from("groups").delete().eq("id", input.groupId);
+
+  if (deleteError) {
+    throw new Error(`Could not delete group: ${deleteError.message}`);
+  }
 }
 
 export async function joinGroupByInviteCode(input: {
@@ -293,6 +597,7 @@ export async function loadGroupPageData(groupId: string): Promise<GroupPageData 
   const user = await requireCurrentUser();
   const supabase = await createSupabaseClient();
   const profile = await ensureProfileForUser(user, supabase);
+  const now = Date.now();
 
   const [{ data: membership, error: membershipError }, { data: group, error: groupError }, { data: events, error: eventsError }] =
     await Promise.all([
@@ -309,10 +614,9 @@ export async function loadGroupPageData(groupId: string): Promise<GroupPageData 
         .maybeSingle(),
       supabase
         .from("movie_night_events")
-        .select("id, title, status, scheduled_for")
+        .select("id, title, status, scheduled_for, created_at")
         .eq("group_id", groupId)
-        .order("created_at", { ascending: false })
-        .limit(6)
+        .order("scheduled_for", { ascending: true, nullsFirst: false })
     ]);
 
   if (membershipError) {
@@ -354,6 +658,12 @@ export async function loadGroupPageData(groupId: string): Promise<GroupPageData 
     throw new Error(`Could not load member profiles: ${profilesError.message}`);
   }
 
+  const visibleEvents = ((events ?? []) as GroupEventRecord[])
+    .filter((event) => shouldShowGroupEvent(event, now))
+    .sort((left, right) => compareGroupEvents(left, right, now))
+    .slice(0, GROUP_EVENT_LIMIT);
+  const topVotesByEventId = await loadTopVotesByEventId(visibleEvents.map((event) => event.id), admin);
+
   const profilesById = new Map((profileRows ?? []).map((row) => [row.id, row]));
   const members: GroupMemberView[] = (memberRows ?? []).map((row) => {
     const memberProfile = profilesById.get(row.user_id);
@@ -371,12 +681,7 @@ export async function loadGroupPageData(groupId: string): Promise<GroupPageData 
 
   return {
     actorRole: membership.role,
-    events: (events ?? []).map((event) => ({
-      id: event.id,
-      scheduledFor: event.scheduled_for,
-      status: event.status,
-      title: event.title
-    })),
+    events: buildGroupEventPreviews(visibleEvents, topVotesByEventId, now),
     group: {
       countryCode: group.country_code.toUpperCase(),
       createdAt: group.created_at,

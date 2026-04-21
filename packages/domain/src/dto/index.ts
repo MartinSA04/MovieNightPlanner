@@ -2,6 +2,7 @@ export type CountryCode = string;
 export type GroupRole = "owner" | "admin" | "member";
 export type EventStatus = "draft" | "open" | "locked" | "completed" | "cancelled";
 export type ProviderType = "flatrate" | "rent" | "buy" | "free" | "ads";
+export type VoteRank = 1 | 2 | 3;
 
 export interface UserDto {
   id: string;
@@ -56,6 +57,7 @@ export interface MovieSuggestionDto {
 export interface VoteDto {
   id: string;
   eventId: string;
+  rank: VoteRank;
   suggestionId: string;
   userId: string;
   createdAt?: string;

@@ -32,7 +32,9 @@ Suggestions tied to an event. Unique `(event_id, tmdb_movie_id)` to prevent dupl
 
 ### `votes`
 
-One vote per user per event via unique `(event_id, user_id)`.
+Ranked picks tied to an event. One row per ranked pick with unique
+`(event_id, user_id, choice_rank)` and unique `(event_id, user_id, suggestion_id)` so a user can
+rank up to 3 different movies.
 
 ### `comments`
 
@@ -61,7 +63,7 @@ RLS should deny by default. Policies should be based on:
 * authenticated user ownership for profiles and subscriptions
 * group membership for reads
 * owner/admin role checks for group and event management
-* open event state for suggestions and votes
+* draft or open event state for suggestions and votes
 
 Membership helper functions used inside RLS policies should run as `security definer` so
 group-based checks do not recurse back into `group_members` policy evaluation.
