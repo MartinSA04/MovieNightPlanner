@@ -39,7 +39,7 @@ export function MoviePoster({
   return (
     <div
       className={cn(
-        "relative shrink-0 self-start overflow-hidden rounded-[22px] border border-slate-200 bg-slate-100 shadow-sm dark:border-slate-800 dark:bg-slate-900",
+        "relative shrink-0 self-start overflow-hidden rounded-xl border border-border bg-secondary",
         sizeClassNames[size],
         className
       )}
@@ -55,7 +55,7 @@ export function MoviePoster({
           src={imageUrl}
         />
       ) : (
-        <div className="flex h-full items-center justify-center px-3 text-center text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
+        <div className="flex h-full items-center justify-center px-3 text-center text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           No poster
         </div>
       )}

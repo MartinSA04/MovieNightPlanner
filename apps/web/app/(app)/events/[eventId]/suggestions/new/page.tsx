@@ -28,10 +28,8 @@ export default async function NewSuggestionPage({ params }: NewSuggestionPagePro
         <div className="space-y-5 p-5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-2">
-              <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">
-                Add movie
-              </h1>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
+              <h1 className="text-4xl font-semibold tracking-tight text-foreground">Add movie</h1>
+              <p className="text-sm text-muted-foreground">
                 {data.event.title} / {getRegionLabel(data.event.regionCode)}
               </p>
             </div>
@@ -45,7 +43,7 @@ export default async function NewSuggestionPage({ params }: NewSuggestionPagePro
           </div>
         </div>
 
-        <div className="border-t border-slate-200 px-5 py-6 dark:border-slate-800 sm:px-6">
+        <div className="border-t border-border px-5 py-6 sm:px-6">
           <TmdbSearchPanel
             canAddMovies={canAddMovies}
             enabled={isTmdbConfigured()}

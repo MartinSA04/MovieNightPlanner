@@ -165,7 +165,7 @@ export function UserSettingsForm({
   return (
     <form action={updateUserSettingsAction} className="space-y-6">
       <div className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+        <label className="space-y-2 text-sm font-medium text-foreground">
           <span>Country code</span>
           <RegionSelect
             className={inputClassName}
@@ -175,7 +175,7 @@ export function UserSettingsForm({
           />
         </label>
 
-        <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+        <label className="space-y-2 text-sm font-medium text-foreground">
           <span>Search services</span>
           <input
             className={inputClassName}
@@ -191,7 +191,7 @@ export function UserSettingsForm({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-2">
             <SectionHeading>Streaming services</SectionHeading>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
+            <p className="text-sm text-muted-foreground">
               {selectedServiceIds.size === 1
                 ? "1 selected"
                 : `${selectedServiceIds.size} selected`}{" "}
@@ -201,12 +201,12 @@ export function UserSettingsForm({
           </div>
 
           {!tmdbConfigured ? (
-            <p className="text-sm text-slate-500 dark:text-slate-400">Using stored providers.</p>
+            <p className="text-sm text-muted-foreground">Using stored providers.</p>
           ) : null}
         </div>
 
         {serviceError ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
             {serviceError}
           </div>
         ) : null}
@@ -216,11 +216,11 @@ export function UserSettingsForm({
         ))}
 
         {isLoadingServices ? (
-          <div className="rounded-[28px] border border-dashed border-slate-300 px-5 py-10 text-center text-sm text-slate-600 dark:border-slate-700 dark:text-slate-300">
+          <div className="rounded-xl border border-dashed border-border bg-secondary/40 px-5 py-10 text-center text-sm text-muted-foreground">
             Loading services…
           </div>
         ) : filteredServices.length > 0 ? (
-          <div className="relative h-72 overflow-hidden rounded-[28px] border border-slate-200 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-900/50 md:h-80">
+          <div className="relative h-72 overflow-hidden rounded-xl border border-border bg-card md:h-80">
             <div className="absolute inset-0 overflow-y-auto p-3 pr-2">
               <div className="grid gap-3 pr-1 sm:grid-cols-2 xl:grid-cols-3">
                 {filteredServices.map((service) => {
@@ -230,10 +230,10 @@ export function UserSettingsForm({
                     <label
                       key={service.id}
                       className={cn(
-                        "flex cursor-pointer items-center gap-4 rounded-[24px] border px-4 py-4 transition",
+                        "flex cursor-pointer items-center gap-4 rounded-xl border px-4 py-4 transition-colors",
                         checked
-                          ? "border-slate-950 bg-slate-950 text-white dark:border-amber-300 dark:bg-amber-300 dark:text-slate-950"
-                          : "border-slate-200 bg-white text-slate-900 hover:border-slate-400 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:hover:border-slate-600"
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-secondary text-secondary-foreground hover:border-primary/40 hover:bg-secondary/80"
                       )}
                     >
                       <input
@@ -246,7 +246,7 @@ export function UserSettingsForm({
                         <Image
                           alt=""
                           aria-hidden="true"
-                          className="h-10 w-10 rounded-xl bg-white/90 object-contain p-2"
+                          className="h-10 w-10 rounded-lg bg-background object-contain p-2"
                           height={40}
                           loading="lazy"
                           src={`${TMDB_LOGO_BASE_URL}${service.logoPath}`}
@@ -256,10 +256,10 @@ export function UserSettingsForm({
                         <span
                           aria-hidden="true"
                           className={cn(
-                            "inline-flex h-10 w-10 items-center justify-center rounded-xl text-xs font-semibold uppercase",
+                            "inline-flex h-10 w-10 items-center justify-center rounded-lg text-xs font-semibold uppercase",
                             checked
-                              ? "bg-white/20 text-current dark:bg-slate-950/15"
-                              : "bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                              ? "bg-white/20 text-current"
+                              : "bg-primary/15 text-primary"
                           )}
                         >
                           {getInitials(service.name)}
@@ -272,8 +272,8 @@ export function UserSettingsForm({
                           className={cn(
                             "block text-xs uppercase tracking-[0.18em]",
                             checked
-                              ? "text-white/70 dark:text-slate-950/65"
-                              : "text-slate-500 dark:text-slate-400"
+                              ? "text-white/70"
+                              : "text-muted-foreground"
                           )}
                         >
                           TMDb
@@ -284,8 +284,8 @@ export function UserSettingsForm({
                         className={cn(
                           "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
                           checked
-                            ? "border-white bg-white text-slate-950 dark:border-slate-950 dark:bg-slate-950 dark:text-amber-300"
-                            : "border-slate-300 dark:border-slate-700"
+                            ? "border-white bg-white text-primary"
+                            : "border-border"
                         )}
                       >
                         {checked ? <Check className="h-3.5 w-3.5" /> : null}
@@ -297,8 +297,8 @@ export function UserSettingsForm({
             </div>
           </div>
         ) : (
-          <div className="rounded-[28px] border border-dashed border-slate-300 px-5 py-10 text-center dark:border-slate-700">
-            <p className="text-base font-semibold text-slate-950 dark:text-white">No matching services</p>
+          <div className="rounded-xl border border-dashed border-border bg-secondary/40 px-5 py-10 text-center">
+            <p className="text-base font-semibold text-foreground">No matching services</p>
           </div>
         )}
       </div>

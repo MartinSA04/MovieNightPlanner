@@ -30,10 +30,10 @@ function getEventView(view?: string): EventView {
 
 function viewLinkClass(active: boolean) {
   return cn(
-    "px-5 py-3 text-[15px] font-medium transition",
+    "px-5 py-3 text-[15px] font-medium transition-colors",
     active
-      ? "relative z-10 -mb-px rounded-t-[22px] rounded-b-none border border-slate-200 border-b-transparent bg-slate-50/80 text-slate-950 after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px after:bg-slate-50/80 dark:border-slate-800 dark:border-b-transparent dark:bg-slate-900/70 dark:text-white dark:after:bg-slate-900/70"
-      : "rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+      ? "relative z-10 -mb-px rounded-t-lg border border-border border-b-card bg-card text-foreground"
+      : "rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80"
   );
 }
 
@@ -76,16 +76,11 @@ export default async function EventDetailPage({
       <Panel className="overflow-hidden p-0">
         <div className="space-y-6 p-5 sm:p-6">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">
-                  {data.event.title}
-                </h1>
-                <p className="text-sm text-slate-600 dark:text-slate-300">
-                  {eventHeaderMeta}
-                </p>
-              </div>
-
+            <div className="space-y-2">
+              <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+                {data.event.title}
+              </h1>
+              <p className="text-sm text-muted-foreground">{eventHeaderMeta}</p>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -117,9 +112,9 @@ export default async function EventDetailPage({
             </nav>
 
             {activeView === "suggestions" ? (
-              <section className="space-y-5 rounded-[32px] border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/70 sm:p-5">
+              <section className="space-y-5 rounded-xl border border-border bg-card p-5 sm:p-6">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                  <p className="text-sm text-muted-foreground">
                     {data.suggestions.length === 1 ? "1 total" : `${data.suggestions.length} total`}
                     {data.stats.voteCount > 0
                       ? data.stats.voteCount === 1
@@ -154,55 +149,55 @@ export default async function EventDetailPage({
                     suggestions={data.suggestions}
                   />
                 ) : (
-                  <div className="rounded-[28px] bg-white px-5 py-10 text-center dark:bg-slate-950">
-                    <p className="text-lg font-semibold text-slate-950 dark:text-white">No movies yet</p>
+                  <div className="rounded-xl border border-border bg-secondary px-5 py-10 text-center">
+                    <p className="text-lg font-semibold text-foreground">No movies yet</p>
                   </div>
                 )}
               </section>
             ) : null}
 
             {activeView === "details" ? (
-              <section className="space-y-5 rounded-[32px] border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/70 sm:p-5">
+              <section className="space-y-5 rounded-xl border border-border bg-card p-5 sm:p-6">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-[28px] bg-white px-5 py-5 dark:bg-slate-950">
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                  <div className="rounded-xl border border-border bg-secondary px-5 py-5">
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                       Schedule
                     </p>
-                    <p className="mt-2 text-lg font-semibold text-slate-950 dark:text-white">
+                    <p className="mt-2 text-lg font-semibold text-foreground">
                       {formatDate(data.event.scheduledFor)}
                     </p>
                   </div>
-                  <div className="rounded-[28px] bg-white px-5 py-5 dark:bg-slate-950">
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                  <div className="rounded-xl border border-border bg-secondary px-5 py-5">
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                       Created by
                     </p>
-                    <p className="mt-2 text-lg font-semibold text-slate-950 dark:text-white">
+                    <p className="mt-2 text-lg font-semibold text-foreground">
                       {data.event.createdByDisplayName}
                     </p>
                   </div>
-                  <div className="rounded-[28px] bg-white px-5 py-5 dark:bg-slate-950">
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                  <div className="rounded-xl border border-border bg-secondary px-5 py-5">
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                       Members
                     </p>
-                    <p className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">
+                    <p className="mt-2 text-3xl font-semibold text-foreground">
                       {data.stats.memberCount}
                     </p>
                   </div>
-                  <div className="rounded-[28px] bg-white px-5 py-5 dark:bg-slate-950">
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                  <div className="rounded-xl border border-border bg-secondary px-5 py-5">
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                       Votes
                     </p>
-                    <p className="mt-2 text-3xl font-semibold text-slate-950 dark:text-white">
+                    <p className="mt-2 text-3xl font-semibold text-foreground">
                       {data.stats.voteCount}
                     </p>
                   </div>
                 </div>
 
-                <div className="rounded-[28px] bg-white px-5 py-5 dark:bg-slate-950">
-                  <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                <div className="rounded-xl border border-border bg-secondary px-5 py-5">
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                     Description
                   </p>
-                  <p className="mt-3 text-sm leading-6 text-slate-700 dark:text-slate-300">
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
                     {data.event.description?.trim() ? data.event.description : "No description."}
                   </p>
                 </div>

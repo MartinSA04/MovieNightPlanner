@@ -13,19 +13,17 @@ export default async function NewGroupPage() {
       <Panel className="overflow-hidden p-0">
         <div className="space-y-6 p-5 sm:p-6">
           <div className="space-y-2">
-            <h1 className="text-4xl font-semibold tracking-tight text-slate-950 dark:text-white">
-              Create group
-            </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
+            <h1 className="text-4xl font-semibold tracking-tight text-foreground">Create group</h1>
+            <p className="text-sm text-muted-foreground">
               {profile.display_name} / {getRegionLabel(profile.country_code)}
             </p>
           </div>
         </div>
 
-        <div className="border-t border-slate-200 px-5 py-6 dark:border-slate-800 sm:px-6">
-          <div className="mx-auto w-full max-w-2xl rounded-[32px] bg-slate-50/80 p-4 dark:bg-slate-900/70 sm:p-5">
+        <div className="border-t border-border px-5 py-6 sm:px-6">
+          <div className="mx-auto w-full max-w-2xl rounded-xl border border-border bg-secondary p-5">
             <form action={createGroupAction} className="grid gap-4">
-              <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label className="space-y-2 text-sm font-medium text-foreground">
                 <span>Group name</span>
                 <input
                   required
@@ -37,7 +35,7 @@ export default async function NewGroupPage() {
                 />
               </label>
 
-              <label className="space-y-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label className="space-y-2 text-sm font-medium text-foreground">
                 <span>Country code</span>
                 <RegionSelect
                   className={inputClassName}

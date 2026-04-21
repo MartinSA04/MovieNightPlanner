@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Film } from "lucide-react";
+import { cn } from "@movie-night/ui";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 interface MenuItem {
@@ -24,27 +26,31 @@ export function AppShell({
   title
 }: AppShellProps) {
   return (
-    <main className="px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6">
-        <header className="rounded-3xl border border-slate-200 bg-white/95 px-4 py-4 shadow-sm backdrop-blur sm:px-6 dark:border-slate-800 dark:bg-slate-950/95">
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-10 border-b border-border bg-card/50 backdrop-blur-sm">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
-              <Link
-                className="text-base font-semibold tracking-tight text-slate-950 dark:text-white"
-                href="/"
-              >
-                Movie Night Planner
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
+              <Link className="inline-flex items-center gap-3" href="/">
+                <span className="rounded-lg bg-primary p-2 text-primary-foreground">
+                  <Film className="h-6 w-6" />
+                </span>
+                <span className="text-base font-semibold tracking-tight text-foreground">
+                  Movie Night Planner
+                </span>
               </Link>
+
               {menu.length > 0 ? (
-                <nav className="flex flex-wrap gap-2 text-sm text-slate-600 dark:text-slate-300">
+                <nav className="flex flex-wrap gap-2">
                   {menu.map((item) => (
                     <Link
                       key={`${item.href}-${item.label}`}
-                      className={`inline-flex min-h-11 items-center rounded-full px-4 py-2.5 font-medium transition ${
+                      className={cn(
+                        "inline-flex min-h-11 items-center rounded-lg px-4 py-2.5 text-sm font-medium transition-colors sm:min-h-12",
                         item.active
-                          ? "bg-slate-900 text-white dark:bg-amber-300 dark:text-slate-950"
-                          : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-                      }`}
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      )}
                       href={item.href}
                     >
                       {item.label}
@@ -53,26 +59,25 @@ export function AppShell({
                 </nav>
               ) : null}
             </div>
+
             <div className="flex flex-wrap items-center gap-2">
               <ThemeToggle />
               {actions}
             </div>
           </div>
-          {title || subtitle ? (
-            <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-800">
-              {title ? (
-                <h1 className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-                  {title}
-                </h1>
-              ) : null}
-              {subtitle ? (
-                <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{subtitle}</p>
-              ) : null}
-            </div>
-          ) : null}
-        </header>
-        <div className="flex flex-col gap-6">{children}</div>
-      </div>
-    </main>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {title || subtitle ? (
+          <section className="mb-8 max-w-3xl space-y-2">
+            {title ? <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{title}</h1> : null}
+            {subtitle ? <p className="text-sm text-muted-foreground sm:text-base">{subtitle}</p> : null}
+          </section>
+        ) : null}
+
+        <div className="space-y-6">{children}</div>
+      </main>
+    </div>
   );
 }

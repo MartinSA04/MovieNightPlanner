@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Panel, SectionHeading, buttonVariants } from "@movie-night/ui";
+import { Film, Users } from "lucide-react";
 import { notFound } from "next/navigation";
 import { joinGroupByInviteAction } from "@/app/actions/group-invite-actions";
 import { AppShell } from "@/components/app-shell";
@@ -47,11 +48,19 @@ export default async function InvitePage({ params }: InvitePageProps) {
       <Panel className="space-y-6">
         <section className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="space-y-5">
-            <div className="space-y-2">
-              <SectionHeading>Action</SectionHeading>
-              <h2 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
-                Accept invite
-              </h2>
+            <div className="rounded-xl border border-border bg-secondary px-5 py-5">
+              <div className="inline-flex rounded-lg bg-primary p-3 text-primary-foreground">
+                <Film className="h-5 w-5" />
+              </div>
+              <div className="mt-5 space-y-2">
+                <SectionHeading>Action</SectionHeading>
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                  Accept invite
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Join the shared movie night space and keep votes, picks, and availability together.
+                </p>
+              </div>
             </div>
 
             {data.currentUserMembershipRole ? (
@@ -86,21 +95,34 @@ export default async function InvitePage({ params }: InvitePageProps) {
             )}
           </div>
 
-          <div className="rounded-[32px] bg-slate-50/80 p-4 dark:bg-slate-900/70 sm:p-5">
+          <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
             <div className="space-y-5">
               <div className="space-y-2">
                 <SectionHeading>Group</SectionHeading>
-                <div className="rounded-2xl bg-white px-4 py-4 dark:bg-slate-950">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Invite code</p>
-                  <p className="mt-1 text-base font-semibold text-slate-950 dark:text-white">
-                    {data.group.inviteCode}
-                  </p>
+                <div className="rounded-xl border border-border bg-secondary px-4 py-4">
+                  <div className="flex items-start gap-3">
+                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                      <Users className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Invite code</p>
+                      <p className="mt-1 text-base font-semibold text-foreground">
+                        {data.group.inviteCode}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
+                <p className="text-sm text-muted-foreground">
                   {data.currentUserMembershipRole
                     ? `You already have access to this group as ${data.currentUserMembershipRole}.`
                     : `${data.memberCount} members / ${getRegionLabel(data.group.countryCode)}`}
                 </p>
+                <div className="rounded-xl border border-border bg-secondary px-4 py-4">
+                  <p className="text-sm text-muted-foreground">Group</p>
+                  <p className="mt-1 text-base font-semibold text-foreground">
+                    {data.group.name}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

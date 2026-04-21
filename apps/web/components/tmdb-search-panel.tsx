@@ -130,21 +130,16 @@ export function TmdbSearchPanel({
   }
 
   return (
-    <section
-      id="search"
-      className={cn(
-        "space-y-5 rounded-[32px] bg-slate-50/80 p-4 dark:bg-slate-900/70 sm:p-5"
-      )}
-    >
+    <section id="search" className={cn("space-y-5")}>
       <div className="space-y-2">
         <SectionHeading>Search</SectionHeading>
-        <h2 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
+        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
           Search TMDb
         </h2>
       </div>
 
       {!enabled ? (
-        <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 dark:bg-slate-950 dark:text-slate-300">
+        <div className="rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">
           TMDb not configured.
         </div>
       ) : (
@@ -171,19 +166,19 @@ export function TmdbSearchPanel({
       )}
 
       {error ? (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       ) : null}
 
       {!canAddMovies ? (
-        <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 dark:bg-slate-950 dark:text-slate-300">
+        <div className="rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">
           Suggestions are locked for this movie night.
         </div>
       ) : null}
 
       {hasSearched && !error && results.length === 0 ? (
-        <div className="rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 dark:bg-slate-950 dark:text-slate-300">
+        <div className="rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">
           No results.
         </div>
       ) : null}
@@ -192,7 +187,7 @@ export function TmdbSearchPanel({
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <SectionHeading>Results</SectionHeading>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm text-muted-foreground">
               {results.length === 1 ? "1 result" : `${results.length} results`}
             </p>
           </div>
@@ -209,7 +204,7 @@ export function TmdbSearchPanel({
               const isPending = pendingMovieId === result.tmdbMovieId;
 
               return (
-                <div key={result.tmdbMovieId} className="rounded-[28px] bg-white p-5 dark:bg-slate-950">
+                <div key={result.tmdbMovieId} className="rounded-xl border border-border bg-secondary p-5">
                   <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                     <div className="flex gap-4 sm:gap-5">
                       <MoviePoster posterPath={result.posterPath ?? null} size="search" title={result.title} />
@@ -217,51 +212,51 @@ export function TmdbSearchPanel({
                       <div className="min-w-0 space-y-4">
                         <div className="space-y-2">
                           <div className="flex flex-wrap items-baseline gap-2">
-                            <h3 className="text-xl font-semibold text-slate-950 dark:text-white">
+                            <h3 className="text-xl font-semibold text-foreground">
                               {result.title}
                             </h3>
                             {getReleaseYear(result.releaseDate) ? (
-                              <span className="text-sm text-slate-500 dark:text-slate-400">
+                              <span className="text-sm text-muted-foreground">
                                 {getReleaseYear(result.releaseDate)}
                               </span>
                             ) : null}
                           </div>
 
                           {result.originalTitle && result.originalTitle !== result.title ? (
-                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                            <p className="text-sm text-muted-foreground">
                               {result.originalTitle}
                             </p>
                           ) : null}
                         </div>
 
                         {result.overview ? (
-                          <p className="max-w-3xl text-sm leading-6 text-slate-700 dark:text-slate-300">
+                          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
                             {result.overview}
                           </p>
                         ) : null}
 
                         <div className="grid gap-3 sm:grid-cols-3">
-                          <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
-                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                          <div className="rounded-lg border border-border bg-card px-4 py-3">
+                            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                               Stream
                             </p>
-                            <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                            <p className="mt-2 text-sm text-muted-foreground">
                               {formatProviderNames(flatrateNames)}
                             </p>
                           </div>
-                          <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
-                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                          <div className="rounded-lg border border-border bg-card px-4 py-3">
+                            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                               Rent
                             </p>
-                            <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                            <p className="mt-2 text-sm text-muted-foreground">
                               {formatProviderNames(rentNames)}
                             </p>
                           </div>
-                          <div className="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-900">
-                            <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                          <div className="rounded-lg border border-border bg-card px-4 py-3">
+                            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                               Buy
                             </p>
-                            <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+                            <p className="mt-2 text-sm text-muted-foreground">
                               {formatProviderNames(buyNames)}
                             </p>
                           </div>
@@ -270,7 +265,7 @@ export function TmdbSearchPanel({
                     </div>
 
                     <div className="flex shrink-0 flex-wrap items-center gap-2 lg:flex-col lg:items-end">
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                      <p className="text-sm text-muted-foreground">
                         {flatrateNames.length > 0 ? "Included with subscription" : "No included stream"}
                       </p>
                       <button

@@ -205,30 +205,30 @@ export function EventVoteDialog({
       {open ? (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-sm"
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm"
           onClick={closeModal}
           role="dialog"
         >
           <div
-            className="w-full max-w-2xl rounded-[28px] border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
+            className="w-full max-w-2xl rounded-xl border border-border bg-card p-6 shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   Vote
                 </p>
-                <h2 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                   Choose your top 3
                 </h2>
-                <p className="text-sm text-slate-600 dark:text-slate-300">
+                <p className="text-sm text-muted-foreground">
                   Save up to 3 picks in order. Leave later slots empty if you want fewer.
                 </p>
               </div>
 
               <button
                 aria-label="Close vote popup"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 text-slate-600 shadow-sm transition hover:border-slate-900 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-400 dark:hover:bg-slate-900 dark:hover:text-white"
+                className={cn(buttonVariants({ size: "sm", variant: "secondary" }), "h-11 w-11 px-0")}
                 onClick={closeModal}
                 type="button"
               >
@@ -244,9 +244,9 @@ export function EventVoteDialog({
               ].map((slot, index) => (
                 <label
                   key={slot.label}
-                  className="block rounded-[24px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/80"
+                  className="block rounded-xl border border-border bg-secondary p-4"
                 >
-                  <span className="mb-3 block text-sm font-semibold text-slate-900 dark:text-white">
+                  <span className="mb-3 block text-sm font-semibold text-foreground">
                     {slot.label}
                   </span>
                   <select
@@ -269,7 +269,9 @@ export function EventVoteDialog({
             </div>
 
             {error ? (
-              <p className="mt-4 text-sm text-rose-600 dark:text-rose-300">{error}</p>
+              <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {error}
+              </div>
             ) : null}
 
             <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">

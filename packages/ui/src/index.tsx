@@ -8,14 +8,13 @@ export function cn(...inputs: ClassValue[]): string {
 }
 
 const panelVariants = cva(
-  "rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-950/90",
+  "rounded-xl border border-border bg-card p-5 sm:p-6",
   {
     variants: {
       tone: {
         default: "",
-        accent:
-          "border-amber-200 bg-amber-50/70 dark:border-amber-400/20 dark:bg-amber-300/10",
-        muted: "bg-slate-50 dark:bg-slate-900/80"
+        accent: "border-accent/30 bg-accent/10",
+        muted: "bg-secondary"
       }
     },
     defaultVariants: {
@@ -40,7 +39,7 @@ export function SectionHeading(props: React.HTMLAttributes<HTMLDivElement>) {
     <div
       {...props}
       className={cn(
-        "text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400",
+        "text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground",
         props.className
       )}
     />
@@ -48,13 +47,13 @@ export function SectionHeading(props: React.HTMLAttributes<HTMLDivElement>) {
 }
 
 const pillVariants = cva(
-  "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em]",
+  "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em]",
   {
     variants: {
       tone: {
-        neutral: "bg-slate-900 text-white",
-        accent: "bg-amber-200 text-slate-900 dark:bg-amber-300 dark:text-slate-950",
-        muted: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+        neutral: "bg-primary text-primary-foreground",
+        accent: "bg-accent/20 text-accent",
+        muted: "bg-secondary text-secondary-foreground"
       }
     },
     defaultVariants: {
@@ -72,7 +71,7 @@ export function Pill({ className, tone, ...props }: PillProps) {
 }
 
 export const buttonVariants = cva(
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:ring-offset-slate-950 sm:min-h-12",
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-12",
   {
     variants: {
       size: {
@@ -80,12 +79,9 @@ export const buttonVariants = cva(
         md: "px-6 py-3 text-sm"
       },
       variant: {
-        primary:
-          "bg-slate-950 text-white hover:bg-slate-800 dark:bg-amber-300 dark:text-slate-950 dark:hover:bg-amber-200",
-        secondary:
-          "border border-slate-300 bg-white text-slate-700 hover:border-slate-900 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
-        ghost:
-          "bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
+        primary: "bg-primary text-primary-foreground hover:bg-primary/90",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
       }
     },
     defaultVariants: {
@@ -96,4 +92,4 @@ export const buttonVariants = cva(
 );
 
 export const inputClassName =
-  "w-full min-h-12 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-base text-slate-950 shadow-sm outline-none transition focus:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-300/50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100";
+  "w-full min-h-12 rounded-lg border border-border bg-input px-4 py-3.5 text-base text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary focus-visible:ring-2 focus-visible:ring-ring/50";

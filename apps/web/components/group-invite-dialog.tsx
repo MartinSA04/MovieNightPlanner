@@ -88,30 +88,30 @@ export function GroupInviteDialog({ inviteCode, inviteLink }: GroupInviteDialogP
       {open ? (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-sm"
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm"
           onClick={() => setOpen(false)}
           role="dialog"
         >
           <div
-            className="w-full max-w-xl rounded-[28px] border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-800 dark:bg-slate-950"
+            className="w-full max-w-xl rounded-xl border border-border bg-card p-6 shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   Invite people
                 </p>
-                <h2 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
                   Share code or link
                 </h2>
-                <p className="text-sm text-slate-600 dark:text-slate-300">
+                <p className="text-sm text-muted-foreground">
                   Anyone with either option can join this group.
                 </p>
               </div>
 
               <button
                 aria-label="Close invite popup"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 text-slate-600 shadow-sm transition hover:border-slate-900 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-400 dark:hover:bg-slate-900 dark:hover:text-white"
+                className={cn(buttonVariants({ size: "sm", variant: "secondary" }), "h-11 w-11 px-0")}
                 onClick={() => setOpen(false)}
                 type="button"
               >
@@ -120,8 +120,8 @@ export function GroupInviteDialog({ inviteCode, inviteLink }: GroupInviteDialogP
             </div>
 
             <div className="mt-6 space-y-4">
-              <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/80">
-                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+              <div className="rounded-xl border border-border bg-secondary p-4">
+                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
                   <Ticket className="h-4 w-4" />
                   <span>Invite code</span>
                 </div>
@@ -145,8 +145,8 @@ export function GroupInviteDialog({ inviteCode, inviteLink }: GroupInviteDialogP
                 </div>
               </div>
 
-              <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/80">
-                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+              <div className="rounded-xl border border-border bg-secondary p-4">
+                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
                   <Link2 className="h-4 w-4" />
                   <span>Invite link</span>
                 </div>

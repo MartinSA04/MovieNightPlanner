@@ -23,6 +23,29 @@ export interface DashboardData {
   profile: AppProfile;
 }
 
+export interface DashboardGroupPreview extends DashboardGroup {
+  memberCount: number;
+}
+
+export interface DashboardMovieNightPreview {
+  groupId: string;
+  groupName: string;
+  id: string;
+  isUpcomingHighlight: boolean;
+  memberCount: number;
+  scheduledFor: string | null;
+  status: EventStatus;
+  title: string;
+  topVote: GroupEventPreview["topVote"];
+}
+
+export interface DashboardPageData {
+  groups: DashboardGroupPreview[];
+  movieNights: DashboardMovieNightPreview[];
+  profile: AppProfile;
+  upcomingMovieNights: DashboardMovieNightPreview[];
+}
+
 export interface NavigationGroup {
   countryCode: string;
   id: string;
@@ -118,6 +141,10 @@ interface GroupEventRecord {
   scheduled_for: string | null;
   status: EventStatus;
   title: string;
+}
+
+interface DashboardGroupEventRecord extends GroupEventRecord {
+  group_id: string;
 }
 
 interface GroupVoteRecord {
@@ -318,6 +345,47 @@ function buildGroupEventPreviews(
   }));
 }
 
+function buildDashboardMovieNightPreviews(input: {
+  events: DashboardGroupEventRecord[];
+  groupsById: Map<string, DashboardGroup>;
+  memberCountsByGroupId: Map<string, number>;
+  topVotesByEventId: Map<string, GroupEventPreview["topVote"]>;
+  now: number;
+}): DashboardMovieNightPreview[] {
+  const visibleEvents = input.events
+    .filter((event) => shouldShowGroupEvent(event, input.now))
+    .sort((left, right) => compareGroupEvents(left, right, input.now))
+    .slice(0, 24);
+
+  const upcomingHighlightId =
+    visibleEvents.find((event) => {
+      const scheduledAt = parseGroupEventTime(event.scheduled_for);
+      return scheduledAt !== null && scheduledAt >= input.now;
+    })?.id ?? null;
+
+  return visibleEvents
+    .map((event) => {
+      const group = input.groupsById.get(event.group_id);
+
+      if (!group) {
+        return null;
+      }
+
+      return {
+        groupId: group.id,
+        groupName: group.name,
+        id: event.id,
+        isUpcomingHighlight: event.id === upcomingHighlightId,
+        memberCount: input.memberCountsByGroupId.get(group.id) ?? 0,
+        scheduledFor: event.scheduled_for,
+        status: event.status,
+        title: event.title,
+        topVote: input.topVotesByEventId.get(event.id) ?? null
+      };
+    })
+    .filter((event): event is DashboardMovieNightPreview => event !== null);
+}
+
 async function loadTopVotesByEventId(
   eventIds: string[],
   admin = createAdminClient()
@@ -449,6 +517,84 @@ export async function loadNavigationGroups(): Promise<NavigationGroup[]> {
   const supabase = await createSupabaseClient();
 
   return loadGroupsForUser(user.id, supabase);
+}
+
+export async function loadDashboardPageData(): Promise<DashboardPageData> {
+  const user = await requireCurrentUser();
+  const supabase = await createSupabaseClient();
+  const profile = await ensureProfileForUser(user, supabase);
+  const groups = await loadGroupsForUser(user.id, supabase);
+
+  if (groups.length === 0) {
+    return {
+      groups: [],
+      movieNights: [],
+      profile,
+      upcomingMovieNights: []
+    };
+  }
+
+  const now = Date.now();
+  const groupIds = groups.map((group) => group.id);
+  const groupsById = new Map(groups.map((group) => [group.id, group]));
+  const admin = createAdminClient();
+  const [
+    { data: eventRows, error: eventsError },
+    { data: membershipRows, error: membershipsError }
+  ] = await Promise.all([
+    admin
+      .from("movie_night_events")
+      .select("id, group_id, title, status, scheduled_for, created_at")
+      .in("group_id", groupIds),
+    admin
+      .from("group_members")
+      .select("group_id")
+      .in("group_id", groupIds)
+  ]);
+
+  if (eventsError) {
+    throw new Error(`Could not load dashboard movie nights: ${eventsError.message}`);
+  }
+
+  if (membershipsError) {
+    throw new Error(`Could not load dashboard group memberships: ${membershipsError.message}`);
+  }
+
+  const memberCountsByGroupId = new Map<string, number>();
+
+  for (const membership of membershipRows ?? []) {
+    memberCountsByGroupId.set(
+      membership.group_id,
+      (memberCountsByGroupId.get(membership.group_id) ?? 0) + 1
+    );
+  }
+
+  const dashboardEvents = (eventRows ?? []) as DashboardGroupEventRecord[];
+  const visibleEventIds = dashboardEvents
+    .filter((event) => shouldShowGroupEvent(event, now))
+    .map((event) => event.id);
+  const topVotesByEventId = await loadTopVotesByEventId(visibleEventIds, admin);
+  const movieNights = buildDashboardMovieNightPreviews({
+    events: dashboardEvents,
+    groupsById,
+    memberCountsByGroupId,
+    now,
+    topVotesByEventId
+  });
+  const groupPreviews = groups.map((group) => ({
+    ...group,
+    memberCount: memberCountsByGroupId.get(group.id) ?? 0
+  }));
+
+  return {
+    groups: groupPreviews,
+    movieNights,
+    profile,
+    upcomingMovieNights: movieNights.filter((movieNight) => {
+      const scheduledAt = parseGroupEventTime(movieNight.scheduledFor);
+      return scheduledAt !== null && scheduledAt >= now;
+    })
+  };
 }
 
 export async function createGroupForOwner(input: {

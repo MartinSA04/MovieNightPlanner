@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ChevronDown,
+  Film,
   KeyRound,
   LogOut,
   PanelLeftClose,
@@ -36,11 +37,11 @@ const SIDEBAR_GROUPS_OPEN_KEY = "movie-night-sidebar-groups-open";
 
 function navItemClass(active: boolean, collapsed: boolean) {
   return cn(
-    "flex min-h-11 items-center rounded-2xl border text-[15px] font-medium shadow-sm transition sm:min-h-12",
+    "flex min-h-11 items-center rounded-xl border text-[15px] font-medium transition sm:min-h-12",
     collapsed ? "justify-between px-3 py-3 lg:justify-center lg:px-2" : "justify-between px-4 py-3",
     active
-      ? "border-slate-950 bg-slate-950 text-white dark:border-amber-300 dark:bg-amber-300 dark:text-slate-950"
-      : "border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800/80"
+      ? "border-violet-400/24 bg-violet-500 text-white shadow-[0_14px_36px_rgba(139,92,246,0.35)]"
+      : "border-violet-400/12 bg-white/6 text-violet-100 hover:border-violet-400/24 hover:bg-violet-400/10 hover:text-white"
   );
 }
 
@@ -108,7 +109,7 @@ export function AppSidebar({ groups, profile }: AppSidebarProps) {
   return (
     <aside
       className={cn(
-        "w-full shrink-0 rounded-[28px] border border-slate-200 bg-white/95 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/95 lg:sticky lg:top-6 lg:self-start lg:transition-[width]",
+        "w-full shrink-0 rounded-[32px] border border-violet-400/18 bg-[linear-gradient(180deg,rgba(30,20,59,0.88),rgba(17,12,34,0.94))] p-4 shadow-[0_24px_80px_rgba(2,1,12,0.42)] backdrop-blur-xl lg:sticky lg:top-6 lg:self-start lg:transition-[width]",
         collapsed ? "lg:w-24" : "lg:w-72"
       )}
     >
@@ -116,15 +117,18 @@ export function AppSidebar({ groups, profile }: AppSidebarProps) {
         <div className={cn("flex items-start justify-between gap-3", collapsed && "lg:flex-col lg:items-center")}>
           <Link
             className={cn(
-              "min-w-0 text-lg font-semibold tracking-tight text-slate-950 dark:text-white",
+              "inline-flex min-w-0 items-center gap-3 text-lg font-semibold tracking-tight text-white",
               collapsed && "lg:text-center"
             )}
             href="/"
           >
+            <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-500 shadow-[0_14px_36px_rgba(139,92,246,0.35)]">
+              <Film className="h-5 w-5 text-white" />
+            </span>
             {collapsed ? (
               <>
                 <span className="lg:hidden">Movie Night Planner</span>
-                <span className="hidden lg:inline">MNP</span>
+                <span className="hidden lg:inline">MN</span>
               </>
             ) : (
               "Movie Night Planner"
@@ -135,7 +139,7 @@ export function AppSidebar({ groups, profile }: AppSidebarProps) {
             <ThemeToggle />
             <button
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-              className="hidden h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white/90 text-slate-700 shadow-sm transition hover:border-slate-900 hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-400 dark:hover:bg-slate-800 dark:hover:text-white lg:inline-flex"
+              className="hidden h-11 w-11 items-center justify-center rounded-xl border border-violet-400/18 bg-white/5 text-violet-100 transition hover:border-violet-400/32 hover:bg-violet-400/10 hover:text-white lg:inline-flex"
               onClick={toggleCollapsed}
               type="button"
             >
@@ -148,11 +152,9 @@ export function AppSidebar({ groups, profile }: AppSidebarProps) {
           className={cn(
             "rounded-[24px] border transition",
             settingsActive
-              ? "border-slate-950 bg-slate-950 text-white dark:border-amber-300 dark:bg-amber-300 dark:text-slate-950"
-              : "border-slate-200 bg-slate-50 text-slate-900 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:hover:border-slate-700",
-            collapsed
-              ? "flex items-center justify-center px-3 py-4"
-              : "block space-y-4 px-4 py-4"
+              ? "border-violet-400/24 bg-violet-500 text-white shadow-[0_14px_36px_rgba(139,92,246,0.35)]"
+              : "border-violet-400/12 bg-white/5 text-white hover:border-violet-400/24 hover:bg-violet-400/10",
+            collapsed ? "flex items-center justify-center px-3 py-4" : "block space-y-4 px-4 py-4"
           )}
           href="/settings"
           title={collapsed ? "Open settings" : undefined}
@@ -161,42 +163,29 @@ export function AppSidebar({ groups, profile }: AppSidebarProps) {
             <span
               className={cn(
                 "inline-flex h-11 w-11 items-center justify-center rounded-2xl text-sm font-semibold uppercase",
-                settingsActive
-                  ? "bg-white/20 text-current dark:bg-slate-950/10"
-                  : "bg-white text-slate-700 dark:bg-slate-950 dark:text-slate-200"
+                settingsActive ? "bg-white/18 text-current" : "bg-violet-500/18 text-violet-100"
               )}
             >
               {getInitials(profile.display_name)}
             </span>
           ) : (
-            <>
-              <div className="flex items-start gap-3">
-                <span
-                  className={cn(
-                    "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold uppercase",
-                    settingsActive
-                      ? "bg-white/20 text-current dark:bg-slate-950/10"
-                      : "bg-white text-slate-700 dark:bg-slate-950 dark:text-slate-200"
-                  )}
-                >
-                  {getInitials(profile.display_name)}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{profile.display_name}</p>
-                  <p
-                    className={cn(
-                      "truncate text-sm",
-                      settingsActive
-                        ? "text-white/70 dark:text-slate-950/70"
-                        : "text-slate-500 dark:text-slate-400"
-                    )}
-                  >
-                    {profile.email}
-                  </p>
-                </div>
-                <Settings2 className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="flex items-start gap-3">
+              <span
+                className={cn(
+                  "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold uppercase",
+                  settingsActive ? "bg-white/18 text-current" : "bg-violet-500/18 text-violet-100"
+                )}
+              >
+                {getInitials(profile.display_name)}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">{profile.display_name}</p>
+                <p className={cn("truncate text-sm", settingsActive ? "text-white/70" : "text-violet-100/55")}>
+                  {profile.email}
+                </p>
               </div>
-            </>
+              <Settings2 className="mt-0.5 h-4 w-4 shrink-0" />
+            </div>
           )}
         </Link>
 
@@ -223,7 +212,7 @@ export function AppSidebar({ groups, profile }: AppSidebarProps) {
           </nav>
         </div>
 
-        <div className="border-t border-slate-200 pt-4 dark:border-slate-800">
+        <div className="border-t border-violet-400/12 pt-4">
           <button
             aria-expanded={groupsOpen}
             className={navItemClass(false, collapsed)}
@@ -236,11 +225,7 @@ export function AppSidebar({ groups, profile }: AppSidebarProps) {
               <span className={cn(collapsed && "lg:sr-only")}>Your groups</span>
             </span>
             <ChevronDown
-              className={cn(
-                "h-4 w-4 transition",
-                groupsOpen ? "rotate-180" : "rotate-0",
-                collapsed && "lg:hidden"
-              )}
+              className={cn("h-4 w-4 transition", groupsOpen ? "rotate-180" : "rotate-0", collapsed && "lg:hidden")}
             />
           </button>
 
@@ -261,7 +246,7 @@ export function AppSidebar({ groups, profile }: AppSidebarProps) {
                     >
                       {collapsed ? (
                         <>
-                          <span className="hidden h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200 lg:inline-flex">
+                          <span className="hidden h-8 w-8 items-center justify-center rounded-full bg-violet-500/14 text-xs font-semibold text-violet-100 lg:inline-flex">
                             {getInitials(group.name)}
                           </span>
                           <span className="min-w-0 lg:hidden">
@@ -272,14 +257,12 @@ export function AppSidebar({ groups, profile }: AppSidebarProps) {
                           </span>
                         </>
                       ) : (
-                        <>
-                          <span className="min-w-0">
-                            <span className="block truncate">{group.name}</span>
-                            <span className="block text-xs uppercase tracking-[0.16em] opacity-70">
-                              {group.countryCode}
-                            </span>
+                        <span className="min-w-0">
+                          <span className="block truncate">{group.name}</span>
+                          <span className="block text-xs uppercase tracking-[0.16em] opacity-70">
+                            {group.countryCode}
                           </span>
-                        </>
+                        </span>
                       )}
                     </Link>
                   );
@@ -287,7 +270,7 @@ export function AppSidebar({ groups, profile }: AppSidebarProps) {
               ) : (
                 <div
                   className={cn(
-                    "rounded-2xl bg-slate-50 text-sm text-slate-500 dark:bg-slate-900 dark:text-slate-400",
+                    "rounded-2xl border border-violet-400/10 bg-white/5 text-sm text-violet-100/60",
                     collapsed ? "px-3 py-3 lg:px-3 lg:py-4 lg:text-center" : "px-3 py-3"
                   )}
                 >
@@ -305,7 +288,7 @@ export function AppSidebar({ groups, profile }: AppSidebarProps) {
           ) : null}
         </div>
 
-        <form action="/auth/signout" className="border-t border-slate-200 pt-4 dark:border-slate-800" method="post">
+        <form action="/auth/signout" className="border-t border-violet-400/12 pt-4" method="post">
           <button
             aria-label="Sign out"
             className={navItemClass(false, collapsed)}
