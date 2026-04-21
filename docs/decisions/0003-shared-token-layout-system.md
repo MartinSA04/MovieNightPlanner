@@ -1,4 +1,4 @@
-# ADR 0003: Shared Figma-Derived Token And Layout System
+# ADR 0003: Shared Token And Layout System
 
 ## Status
 
@@ -12,7 +12,7 @@ and detail screens without page-specific gradients or bespoke component styling.
 
 ## Decision
 
-Adopt the local `from_figma` export as the reference for:
+Adopt a shared semantic token and layout system for:
 
 * semantic color tokens such as `background`, `card`, `secondary`, `primary`, and `accent`
 * a top-header authenticated shell with dashboard-level navigation
@@ -31,5 +31,5 @@ Positive:
 
 Tradeoffs:
 
-* local deviations from the Figma reference need to be intentional and documented
+* local visual deviations need to be intentional and documented
 * some previously custom page treatments were removed to preserve consistency
