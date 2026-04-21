@@ -3,12 +3,7 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { Check } from "lucide-react";
-import {
-  SectionHeading,
-  buttonVariants,
-  cn,
-  inputClassName
-} from "@movie-night/ui";
+import { buttonVariants, cn, inputClassName } from "@movie-night/ui";
 import { RegionSelect } from "@/components/region-select";
 import { updateUserSettingsAction } from "@/app/(app)/settings/actions";
 import type { SettingsServiceOption } from "@/server/settings";
@@ -164,9 +159,9 @@ export function UserSettingsForm({
 
   return (
     <form action={updateUserSettingsAction} className="space-y-6">
-      <div className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <label className="space-y-2 text-sm font-medium text-foreground">
-          <span>Country code</span>
+      <div className="grid gap-4 rounded-2xl border border-border/60 bg-card p-6 md:grid-cols-[16rem_minmax(0,1fr)]">
+        <label className="grid gap-2 text-sm font-medium text-foreground">
+          <span>Country</span>
           <RegionSelect
             className={inputClassName}
             name="countryCode"
@@ -175,7 +170,7 @@ export function UserSettingsForm({
           />
         </label>
 
-        <label className="space-y-2 text-sm font-medium text-foreground">
+        <label className="grid gap-2 text-sm font-medium text-foreground">
           <span>Search services</span>
           <input
             className={inputClassName}
@@ -187,23 +182,23 @@ export function UserSettingsForm({
         </label>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="space-y-2">
-            <SectionHeading>Streaming services</SectionHeading>
-            <p className="text-sm text-muted-foreground">
-              {selectedServiceIds.size === 1
-                ? "1 selected"
-                : `${selectedServiceIds.size} selected`}{" "}
-              / {services.length === 1 ? "1 service" : `${services.length} services`} /{" "}
-              {countryCode}
-            </p>
-          </div>
-
-          {!tmdbConfigured ? (
-            <p className="text-sm text-muted-foreground">Using stored providers.</p>
-          ) : null}
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <h2 className="text-base font-semibold text-foreground">Streaming services</h2>
+          <p className="text-sm text-muted-foreground">
+            {selectedServiceIds.size === 1
+              ? "1 selected"
+              : `${selectedServiceIds.size} selected`}
+            {" · "}
+            {services.length === 1 ? "1 available" : `${services.length} available`}
+            {" · "}
+            {countryCode}
+          </p>
         </div>
+
+        {!tmdbConfigured ? (
+          <p className="text-xs text-muted-foreground">Using stored providers.</p>
+        ) : null}
 
         {serviceError ? (
           <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -216,96 +211,85 @@ export function UserSettingsForm({
         ))}
 
         {isLoadingServices ? (
-          <div className="rounded-xl border border-dashed border-border bg-secondary/40 px-5 py-10 text-center text-sm text-muted-foreground">
+          <div className="rounded-2xl border border-dashed border-border/60 bg-card/40 px-5 py-10 text-center text-sm text-muted-foreground">
             Loading services…
           </div>
         ) : filteredServices.length > 0 ? (
-          <div className="relative h-72 overflow-hidden rounded-xl border border-border bg-card md:h-80">
-            <div className="absolute inset-0 overflow-y-auto p-3 pr-2">
-              <div className="grid gap-3 pr-1 sm:grid-cols-2 xl:grid-cols-3">
-                {filteredServices.map((service) => {
-                  const checked = selectedServiceIds.has(service.id);
+          <div className="max-h-96 overflow-y-auto rounded-2xl border border-border/60 bg-card p-3">
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              {filteredServices.map((service) => {
+                const checked = selectedServiceIds.has(service.id);
 
-                  return (
-                    <label
-                      key={service.id}
+                return (
+                  <label
+                    key={service.id}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors",
+                      checked
+                        ? "border-primary/40 bg-primary/10 text-foreground"
+                        : "border-border/60 bg-transparent text-foreground hover:border-primary/30 hover:bg-secondary/40"
+                    )}
+                  >
+                    <input
+                      checked={checked}
+                      className="sr-only"
+                      onChange={() => toggleService(service.id)}
+                      type="checkbox"
+                    />
+                    {service.logoPath ? (
+                      <Image
+                        alt=""
+                        aria-hidden="true"
+                        className="h-9 w-9 rounded-md bg-background object-contain p-1.5"
+                        height={36}
+                        loading="lazy"
+                        src={`${TMDB_LOGO_BASE_URL}${service.logoPath}`}
+                        width={36}
+                      />
+                    ) : (
+                      <span
+                        aria-hidden="true"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-xs font-semibold uppercase text-primary"
+                      >
+                        {getInitials(service.name)}
+                      </span>
+                    )}
+
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                      {service.name}
+                    </span>
+
+                    <span
                       className={cn(
-                        "flex cursor-pointer items-center gap-4 rounded-xl border px-4 py-4 transition-colors",
+                        "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition",
                         checked
                           ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-secondary text-secondary-foreground hover:border-primary/40 hover:bg-secondary/80"
+                          : "border-border/70"
                       )}
                     >
-                      <input
-                        checked={checked}
-                        className="sr-only"
-                        onChange={() => toggleService(service.id)}
-                        type="checkbox"
-                      />
-                      {service.logoPath ? (
-                        <Image
-                          alt=""
-                          aria-hidden="true"
-                          className="h-10 w-10 rounded-lg bg-background object-contain p-2"
-                          height={40}
-                          loading="lazy"
-                          src={`${TMDB_LOGO_BASE_URL}${service.logoPath}`}
-                          width={40}
-                        />
-                      ) : (
-                        <span
-                          aria-hidden="true"
-                          className={cn(
-                            "inline-flex h-10 w-10 items-center justify-center rounded-lg text-xs font-semibold uppercase",
-                            checked
-                              ? "bg-white/20 text-current"
-                              : "bg-primary/15 text-primary"
-                          )}
-                        >
-                          {getInitials(service.name)}
-                        </span>
-                      )}
-
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-semibold">{service.name}</span>
-                        <span
-                          className={cn(
-                            "block text-xs uppercase tracking-[0.18em]",
-                            checked
-                              ? "text-white/70"
-                              : "text-muted-foreground"
-                          )}
-                        >
-                          TMDb
-                        </span>
-                      </span>
-
-                      <span
-                        className={cn(
-                          "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
-                          checked
-                            ? "border-white bg-white text-primary"
-                            : "border-border"
-                        )}
-                      >
-                        {checked ? <Check className="h-3.5 w-3.5" /> : null}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
+                      {checked ? <Check className="h-3.5 w-3.5" /> : null}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed border-border bg-secondary/40 px-5 py-10 text-center">
-            <p className="text-base font-semibold text-foreground">No matching services</p>
+          <div className="rounded-2xl border border-dashed border-border/60 bg-card/40 px-5 py-10 text-center">
+            <p className="text-sm font-semibold text-foreground">No matching services</p>
           </div>
         )}
       </div>
 
-      <button className={buttonVariants()} disabled={isLoadingServices}>
-        {isLoadingServices ? "Loading services" : "Save"}
-      </button>
+      <div className="flex justify-end">
+        <button
+          className={buttonVariants({ size: "sm" })}
+          disabled={isLoadingServices}
+          type="submit"
+        >
+          {isLoadingServices ? "Loading…" : "Save changes"}
+        </button>
+      </div>
     </form>
   );
 }

@@ -35,21 +35,18 @@ function getReleaseYear(releaseDate: string | null | undefined) {
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short"
+    dateStyle: "medium"
   }).format(new Date(value));
 }
 
-function formatVoteCount(count: number) {
-  if (count === 0) {
-    return "No votes";
+function formatStanding(points: number, ballotCount: number) {
+  if (points === 0 && ballotCount === 0) {
+    return "No votes yet";
   }
 
-  return count === 1 ? "1 vote" : `${count} votes`;
-}
-
-function formatPoints(points: number) {
-  return points === 1 ? "1 point" : `${points} points`;
+  const pointsLabel = `${points} ${points === 1 ? "point" : "points"}`;
+  const ballotLabel = `${ballotCount} ${ballotCount === 1 ? "vote" : "votes"}`;
+  return `${pointsLabel} · ${ballotLabel}`;
 }
 
 export function EventSuggestionsBoard({
@@ -59,20 +56,25 @@ export function EventSuggestionsBoard({
   suggestions
 }: EventSuggestionsBoardProps) {
   return (
-    <div className="grid gap-3">
+    <div className="space-y-3">
       {suggestions.map((suggestion, index) => (
-        <div key={suggestion.id} className="rounded-xl border border-border bg-secondary px-5 py-5">
+        <div
+          key={suggestion.id}
+          className="rounded-2xl border border-border/60 bg-card p-5"
+        >
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div className="flex gap-4 sm:gap-5">
-              <MoviePoster posterPath={suggestion.posterPath} title={suggestion.title} />
+              <div className="flex flex-col items-center gap-2">
+                <MoviePoster posterPath={suggestion.posterPath} title={suggestion.title} />
+                <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  #{String(index + 1).padStart(2, "0")}
+                </span>
+              </div>
 
-              <div className="min-w-0 space-y-3">
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-baseline gap-3">
-                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <h3 className="text-xl font-semibold text-foreground">
+              <div className="min-w-0 space-y-2">
+                <div>
+                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                    <h3 className="text-base font-semibold text-foreground">
                       {suggestion.title}
                     </h3>
                     {getReleaseYear(suggestion.releaseDate) ? (
@@ -81,33 +83,34 @@ export function EventSuggestionsBoard({
                       </span>
                     ) : null}
                   </div>
-
-                  <p className="text-sm text-muted-foreground">
-                    {formatPoints(suggestion.points)} / {formatVoteCount(suggestion.ballotCount)}
-                  </p>
+                  {suggestion.originalTitle &&
+                  suggestion.originalTitle !== suggestion.title ? (
+                    <p className="text-xs text-muted-foreground">
+                      {suggestion.originalTitle}
+                    </p>
+                  ) : null}
                 </div>
 
-                {suggestion.originalTitle && suggestion.originalTitle !== suggestion.title ? (
-                  <p className="text-sm text-muted-foreground">
-                    {suggestion.originalTitle}
-                  </p>
-                ) : null}
+                <p className="text-sm font-medium text-foreground/90">
+                  {formatStanding(suggestion.points, suggestion.ballotCount)}
+                </p>
 
                 {suggestion.overview ? (
-                  <p className="text-sm leading-6 text-muted-foreground">
+                  <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">
                     {suggestion.overview}
                   </p>
                 ) : null}
 
-                <p className="text-sm text-muted-foreground">
-                  {suggestion.suggestedByDisplayName} / {formatDate(suggestion.createdAt)}
-                </p>
-
                 {suggestion.note ? (
-                  <p className="text-sm text-muted-foreground">
-                    {suggestion.note}
+                  <p className="rounded-lg bg-secondary/50 px-3 py-2 text-sm text-foreground/90">
+                    “{suggestion.note}”
                   </p>
                 ) : null}
+
+                <p className="text-xs text-muted-foreground">
+                  Suggested by {suggestion.suggestedByDisplayName} ·{" "}
+                  {formatDate(suggestion.createdAt)}
+                </p>
               </div>
             </div>
 

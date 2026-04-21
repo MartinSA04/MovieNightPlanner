@@ -27,52 +27,56 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b border-border bg-card/50 backdrop-blur-sm">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
-              <Link className="inline-flex items-center gap-3" href="/">
-                <span className="rounded-lg bg-primary p-2 text-primary-foreground">
-                  <Film className="h-6 w-6" />
-                </span>
-                <span className="text-base font-semibold tracking-tight text-foreground">
-                  Movie Night Planner
-                </span>
-              </Link>
+      <header className="sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-6">
+            <Link className="inline-flex items-center gap-2.5" href="/">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <Film className="h-4 w-4" />
+              </span>
+              <span className="text-sm font-semibold tracking-tight text-foreground">
+                Movie Night Planner
+              </span>
+            </Link>
 
-              {menu.length > 0 ? (
-                <nav className="flex flex-wrap gap-2">
-                  {menu.map((item) => (
-                    <Link
-                      key={`${item.href}-${item.label}`}
-                      className={cn(
-                        "inline-flex min-h-11 items-center rounded-lg px-4 py-2.5 text-sm font-medium transition-colors sm:min-h-12",
-                        item.active
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                      )}
-                      href={item.href}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </nav>
-              ) : null}
-            </div>
+            {menu.length > 0 ? (
+              <nav className="hidden items-center gap-1 sm:flex">
+                {menu.map((item) => (
+                  <Link
+                    key={`${item.href}-${item.label}`}
+                    className={cn(
+                      "inline-flex h-9 items-center rounded-md px-3 text-sm font-medium transition-colors",
+                      item.active
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                    href={item.href}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+            ) : null}
+          </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <ThemeToggle />
-              {actions}
-            </div>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            {actions}
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         {title || subtitle ? (
-          <section className="mb-8 max-w-3xl space-y-2">
-            {title ? <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{title}</h1> : null}
-            {subtitle ? <p className="text-sm text-muted-foreground sm:text-base">{subtitle}</p> : null}
+          <section className="mb-8 max-w-2xl space-y-2">
+            {title ? (
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-[32px]">
+                {title}
+              </h1>
+            ) : null}
+            {subtitle ? (
+              <p className="text-base text-muted-foreground">{subtitle}</p>
+            ) : null}
           </section>
         ) : null}
 

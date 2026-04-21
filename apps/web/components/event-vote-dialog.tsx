@@ -198,55 +198,56 @@ export function EventVoteDialog({
 
   return (
     <>
-      <button className={buttonVariants({ size: "sm", variant: "secondary" })} onClick={openModal} type="button">
+      <button
+        className={buttonVariants({ size: "sm", variant: "outline" })}
+        onClick={openModal}
+        type="button"
+      >
         Vote
       </button>
 
       {open ? (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm"
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-background/70 px-4 py-6 backdrop-blur-sm"
           onClick={closeModal}
           role="dialog"
         >
           <div
-            className="w-full max-w-2xl rounded-xl border border-border bg-card p-6 shadow-xl"
+            className="w-full max-w-lg rounded-2xl border border-border/60 bg-card p-6 shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
-              <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Vote
-                </p>
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+              <div className="space-y-1">
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">
                   Choose your top 3
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Save up to 3 picks in order. Leave later slots empty if you want fewer.
+                  Rank up to three picks. Leave later slots empty for fewer.
                 </p>
               </div>
 
               <button
                 aria-label="Close vote popup"
-                className={cn(buttonVariants({ size: "sm", variant: "secondary" }), "h-11 w-11 px-0")}
+                className={cn(
+                  buttonVariants({ size: "sm", variant: "ghost" }),
+                  "h-9 w-9 px-0"
+                )}
                 onClick={closeModal}
                 type="button"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="mt-6 space-y-4">
+            <div className="mt-5 space-y-3">
               {[
                 { label: "1st pick", placeholder: "Choose your favorite" },
                 { label: "2nd pick", placeholder: "Choose your runner-up" },
                 { label: "3rd pick", placeholder: "Choose one more" }
               ].map((slot, index) => (
-                <label
-                  key={slot.label}
-                  className="block rounded-xl border border-border bg-secondary p-4"
-                >
-                  <span className="mb-3 block text-sm font-semibold text-foreground">
+                <label key={slot.label} className="grid gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground">
                     {slot.label}
                   </span>
                   <select
@@ -274,9 +275,9 @@ export function EventVoteDialog({
               </div>
             ) : null}
 
-            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <div className="mt-6 flex justify-end gap-2">
               <button
-                className={buttonVariants({ size: "sm", variant: "secondary" })}
+                className={buttonVariants({ size: "sm", variant: "ghost" })}
                 onClick={closeModal}
                 type="button"
               >
@@ -288,7 +289,7 @@ export function EventVoteDialog({
                 onClick={() => void handleSaveVote()}
                 type="button"
               >
-                {isSaving ? "Saving" : "Save"}
+                {isSaving ? "Saving…" : "Save picks"}
               </button>
             </div>
           </div>

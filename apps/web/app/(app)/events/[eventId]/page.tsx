@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Panel, buttonVariants, cn } from "@movie-night/ui";
+import { buttonVariants, cn } from "@movie-night/ui";
 import { notFound } from "next/navigation";
 import { EventSuggestionsBoard } from "@/components/event-suggestions-board";
 import { EventVoteDialog } from "@/components/event-vote-dialog";
@@ -28,12 +28,12 @@ function getEventView(view?: string): EventView {
   return "suggestions";
 }
 
-function viewLinkClass(active: boolean) {
+function tabLinkClass(active: boolean) {
   return cn(
-    "px-5 py-3 text-[15px] font-medium transition-colors",
+    "-mb-px inline-flex h-10 items-center border-b-2 px-1 text-sm font-medium transition-colors",
     active
-      ? "relative z-10 -mb-px rounded-t-lg border border-border border-b-card bg-card text-foreground"
-      : "rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80"
+      ? "border-primary text-foreground"
+      : "border-transparent text-muted-foreground hover:text-foreground"
   );
 }
 
@@ -69,143 +69,138 @@ export default async function EventDetailPage({
     getEventStatusLabel(data.event.status)
   ]
     .filter((value): value is string => Boolean(value))
-    .join(" / ");
+    .join(" · ");
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <Panel className="overflow-hidden p-0">
-        <div className="space-y-6 p-5 sm:p-6">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-            <div className="space-y-2">
-              <h1 className="text-4xl font-semibold tracking-tight text-foreground">
-                {data.event.title}
-              </h1>
-              <p className="text-sm text-muted-foreground">{eventHeaderMeta}</p>
-            </div>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            {data.event.title}
+          </h1>
+          <p className="text-sm text-muted-foreground">{eventHeaderMeta}</p>
+        </div>
+
+        <Link
+          className={buttonVariants({ size: "sm", variant: "ghost" })}
+          href={`/groups/${data.group.id}?view=events`}
+        >
+          ← Back to group
+        </Link>
+      </header>
+
+      <div className="border-b border-border/60">
+        <nav className="flex gap-6">
+          <Link
+            className={tabLinkClass(activeView === "suggestions")}
+            href={`/events/${data.event.id}?view=suggestions`}
+          >
+            Movies
+          </Link>
+          <Link
+            className={tabLinkClass(activeView === "details")}
+            href={`/events/${data.event.id}?view=details`}
+          >
+            Details
+          </Link>
+        </nav>
+      </div>
+
+      {activeView === "suggestions" ? (
+        <section className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+              {data.suggestions.length === 1 ? "1 movie" : `${data.suggestions.length} movies`}
+              {data.stats.voteCount > 0
+                ? ` · ${data.stats.voteCount} ${data.stats.voteCount === 1 ? "vote" : "votes"}`
+                : ""}
+            </p>
 
             <div className="flex flex-wrap gap-2">
-              <Link
-                className={buttonVariants({ size: "sm", variant: "secondary" })}
-                href={`/groups/${data.group.id}?view=events`}
-              >
-                Back to group
-              </Link>
+              <EventVoteDialog
+                canVote={canVote}
+                eventId={data.event.id}
+                suggestions={data.suggestions}
+              />
+
+              {canAddMovies ? (
+                <Link
+                  className={buttonVariants({ size: "sm" })}
+                  href={`/events/${data.event.id}/suggestions/new`}
+                >
+                  Add movie
+                </Link>
+              ) : null}
             </div>
           </div>
-        </div>
 
-        <div className="px-5 pb-6 pt-0 sm:px-6">
-          <div className="space-y-0">
-            <nav className="relative z-10 flex flex-wrap gap-2 px-5 sm:px-6">
-              <Link
-                className={viewLinkClass(activeView === "suggestions")}
-                href={`/events/${data.event.id}?view=suggestions`}
-              >
-                Movies
-              </Link>
-              <Link
-                className={viewLinkClass(activeView === "details")}
-                href={`/events/${data.event.id}?view=details`}
-              >
-                Details
-              </Link>
-            </nav>
+          {data.suggestions.length > 0 ? (
+            <EventSuggestionsBoard
+              canRemoveMovies={canAddMovies}
+              currentUserId={data.profile.id}
+              eventId={data.event.id}
+              suggestions={data.suggestions}
+            />
+          ) : (
+            <div className="rounded-2xl border border-dashed border-border/60 bg-card/40 px-6 py-12 text-center">
+              <p className="text-base font-semibold text-foreground">No movies yet</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Add a pick to get the vote going.
+              </p>
+            </div>
+          )}
+        </section>
+      ) : null}
 
-            {activeView === "suggestions" ? (
-              <section className="space-y-5 rounded-xl border border-border bg-card p-5 sm:p-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <p className="text-sm text-muted-foreground">
-                    {data.suggestions.length === 1 ? "1 total" : `${data.suggestions.length} total`}
-                    {data.stats.voteCount > 0
-                      ? data.stats.voteCount === 1
-                        ? " / 1 vote"
-                        : ` / ${data.stats.voteCount} votes`
-                      : ""}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2">
-                    <EventVoteDialog
-                      canVote={canVote}
-                      eventId={data.event.id}
-                      suggestions={data.suggestions}
-                    />
-
-                    {canAddMovies ? (
-                      <Link
-                        className={buttonVariants({ size: "sm" })}
-                        href={`/events/${data.event.id}/suggestions/new`}
-                      >
-                        Add
-                      </Link>
-                    ) : null}
-                  </div>
-                </div>
-
-                {data.suggestions.length > 0 ? (
-                  <EventSuggestionsBoard
-                    canRemoveMovies={canAddMovies}
-                    currentUserId={data.profile.id}
-                    eventId={data.event.id}
-                    suggestions={data.suggestions}
-                  />
-                ) : (
-                  <div className="rounded-xl border border-border bg-secondary px-5 py-10 text-center">
-                    <p className="text-lg font-semibold text-foreground">No movies yet</p>
-                  </div>
-                )}
-              </section>
-            ) : null}
-
-            {activeView === "details" ? (
-              <section className="space-y-5 rounded-xl border border-border bg-card p-5 sm:p-6">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-xl border border-border bg-secondary px-5 py-5">
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                      Schedule
-                    </p>
-                    <p className="mt-2 text-lg font-semibold text-foreground">
-                      {formatDate(data.event.scheduledFor)}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-border bg-secondary px-5 py-5">
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                      Created by
-                    </p>
-                    <p className="mt-2 text-lg font-semibold text-foreground">
-                      {data.event.createdByDisplayName}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-border bg-secondary px-5 py-5">
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                      Members
-                    </p>
-                    <p className="mt-2 text-3xl font-semibold text-foreground">
-                      {data.stats.memberCount}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-border bg-secondary px-5 py-5">
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                      Votes
-                    </p>
-                    <p className="mt-2 text-3xl font-semibold text-foreground">
-                      {data.stats.voteCount}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-border bg-secondary px-5 py-5">
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                    Description
-                  </p>
-                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                    {data.event.description?.trim() ? data.event.description : "No description."}
-                  </p>
-                </div>
-              </section>
-            ) : null}
+      {activeView === "details" ? (
+        <section className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-border/60 bg-card px-5 py-4">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                Schedule
+              </p>
+              <p className="mt-1.5 text-base font-semibold text-foreground">
+                {formatDate(data.event.scheduledFor)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-card px-5 py-4">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                Created by
+              </p>
+              <p className="mt-1.5 text-base font-semibold text-foreground">
+                {data.event.createdByDisplayName}
+              </p>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-card px-5 py-4">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                Members
+              </p>
+              <p className="mt-1.5 text-2xl font-semibold text-foreground">
+                {data.stats.memberCount}
+              </p>
+            </div>
+            <div className="rounded-xl border border-border/60 bg-card px-5 py-4">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                Votes
+              </p>
+              <p className="mt-1.5 text-2xl font-semibold text-foreground">
+                {data.stats.voteCount}
+              </p>
+            </div>
           </div>
-        </div>
-      </Panel>
+
+          <div className="rounded-xl border border-border/60 bg-card px-5 py-5">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Description
+            </p>
+            <p className="mt-2 text-sm leading-6 text-foreground/90">
+              {data.event.description?.trim()
+                ? data.event.description
+                : "No description yet."}
+            </p>
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

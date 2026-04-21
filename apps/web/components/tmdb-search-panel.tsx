@@ -4,12 +4,8 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { TmdbMovieSearchResultDto } from "@movie-night/domain";
-import {
-  SectionHeading,
-  buttonVariants,
-  cn,
-  inputClassName
-} from "@movie-night/ui";
+import { buttonVariants, cn, inputClassName } from "@movie-night/ui";
+import { Search } from "lucide-react";
 import { MoviePoster } from "@/components/movie-poster";
 
 interface TmdbSearchPanelProps {
@@ -40,7 +36,7 @@ function getReleaseYear(releaseDate: string | null | undefined) {
 
 function formatProviderNames(names: string[]) {
   if (names.length === 0) {
-    return "None";
+    return "—";
   }
 
   return names.join(", ");
@@ -130,69 +126,64 @@ export function TmdbSearchPanel({
   }
 
   return (
-    <section id="search" className={cn("space-y-5")}>
-      <div className="space-y-2">
-        <SectionHeading>Search</SectionHeading>
-        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-          Search TMDb
-        </h2>
-      </div>
-
+    <section id="search" className="space-y-5">
       {!enabled ? (
-        <div className="rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">
-          TMDb not configured.
+        <div className="rounded-xl border border-border/60 bg-card px-4 py-3 text-sm text-muted-foreground">
+          TMDb is not configured.
         </div>
       ) : (
-        <form className="flex flex-col gap-3 sm:flex-row" onSubmit={handleSubmit}>
-          <div className="flex-1">
+        <form className="flex flex-col gap-2 sm:flex-row" onSubmit={handleSubmit}>
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <label className="sr-only" htmlFor="tmdb-query">
               Search TMDb
             </label>
             <input
               autoFocus
-              className={inputClassName}
+              className={cn(inputClassName, "pl-10")}
               id="tmdb-query"
               name="query"
               onChange={(currentEvent) => setQuery(currentEvent.target.value)}
-              placeholder="Search by title"
+              placeholder="Search movies by title"
               type="text"
               value={query}
             />
           </div>
-          <button className={buttonVariants()} disabled={!canSearch}>
-            {isLoading ? "Finding" : "Find"}
+          <button
+            className={buttonVariants({ size: "md" })}
+            disabled={!canSearch}
+            type="submit"
+          >
+            {isLoading ? "Searching…" : "Search"}
           </button>
         </form>
       )}
 
       {error ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       ) : null}
 
       {!canAddMovies ? (
-        <div className="rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">
+        <div className="rounded-xl border border-border/60 bg-card px-4 py-3 text-sm text-muted-foreground">
           Suggestions are locked for this movie night.
         </div>
       ) : null}
 
       {hasSearched && !error && results.length === 0 ? (
-        <div className="rounded-lg border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">
+        <div className="rounded-xl border border-dashed border-border/60 bg-card/40 px-4 py-8 text-center text-sm text-muted-foreground">
           No results.
         </div>
       ) : null}
 
       {results.length > 0 ? (
-        <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <SectionHeading>Results</SectionHeading>
-            <p className="text-sm text-muted-foreground">
-              {results.length === 1 ? "1 result" : `${results.length} results`}
-            </p>
-          </div>
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            {results.length === 1 ? "1 result" : `${results.length} results`}
+          </p>
 
-          <div className="grid gap-3">
+          <div className="space-y-3">
             {results.map((result) => {
               const flatrateNames =
                 result.watchProviders?.flatrateProviders.map((provider) => provider.providerName) ?? [];
@@ -204,15 +195,22 @@ export function TmdbSearchPanel({
               const isPending = pendingMovieId === result.tmdbMovieId;
 
               return (
-                <div key={result.tmdbMovieId} className="rounded-xl border border-border bg-secondary p-5">
-                  <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="flex gap-4 sm:gap-5">
-                      <MoviePoster posterPath={result.posterPath ?? null} size="search" title={result.title} />
+                <div
+                  key={result.tmdbMovieId}
+                  className="rounded-2xl border border-border/60 bg-card p-5"
+                >
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="flex min-w-0 gap-4 sm:gap-5">
+                      <MoviePoster
+                        posterPath={result.posterPath ?? null}
+                        size="search"
+                        title={result.title}
+                      />
 
-                      <div className="min-w-0 space-y-4">
-                        <div className="space-y-2">
+                      <div className="min-w-0 space-y-3">
+                        <div>
                           <div className="flex flex-wrap items-baseline gap-2">
-                            <h3 className="text-xl font-semibold text-foreground">
+                            <h3 className="text-base font-semibold text-foreground">
                               {result.title}
                             </h3>
                             {getReleaseYear(result.releaseDate) ? (
@@ -221,60 +219,41 @@ export function TmdbSearchPanel({
                               </span>
                             ) : null}
                           </div>
-
                           {result.originalTitle && result.originalTitle !== result.title ? (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-xs text-muted-foreground">
                               {result.originalTitle}
                             </p>
                           ) : null}
                         </div>
 
                         {result.overview ? (
-                          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+                          <p className="line-clamp-3 max-w-3xl text-sm leading-6 text-muted-foreground">
                             {result.overview}
                           </p>
                         ) : null}
 
-                        <div className="grid gap-3 sm:grid-cols-3">
-                          <div className="rounded-lg border border-border bg-card px-4 py-3">
-                            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                              Stream
-                            </p>
-                            <p className="mt-2 text-sm text-muted-foreground">
-                              {formatProviderNames(flatrateNames)}
-                            </p>
-                          </div>
-                          <div className="rounded-lg border border-border bg-card px-4 py-3">
-                            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                              Rent
-                            </p>
-                            <p className="mt-2 text-sm text-muted-foreground">
-                              {formatProviderNames(rentNames)}
-                            </p>
-                          </div>
-                          <div className="rounded-lg border border-border bg-card px-4 py-3">
-                            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                              Buy
-                            </p>
-                            <p className="mt-2 text-sm text-muted-foreground">
-                              {formatProviderNames(buyNames)}
-                            </p>
-                          </div>
+                        <div className="grid gap-2 text-xs sm:grid-cols-3">
+                          <ProviderRow label="Stream" value={formatProviderNames(flatrateNames)} />
+                          <ProviderRow label="Rent" value={formatProviderNames(rentNames)} />
+                          <ProviderRow label="Buy" value={formatProviderNames(buyNames)} />
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex shrink-0 flex-wrap items-center gap-2 lg:flex-col lg:items-end">
-                      <p className="text-sm text-muted-foreground">
-                        {flatrateNames.length > 0 ? "Included with subscription" : "No included stream"}
+                    <div className="flex shrink-0 items-center gap-3 lg:flex-col lg:items-end lg:gap-2">
+                      <p className="text-xs text-muted-foreground">
+                        {flatrateNames.length > 0 ? "Included with subscription" : "Not on any stream"}
                       </p>
                       <button
-                        className={buttonVariants({ size: "sm" })}
+                        className={buttonVariants({
+                          size: "sm",
+                          variant: isAdded ? "outline" : "primary"
+                        })}
                         disabled={!canAddMovies || isAdded || isPending}
                         onClick={() => void handleAddMovie(result.tmdbMovieId)}
                         type="button"
                       >
-                        {isPending ? "Adding" : isAdded ? "Added" : "Add"}
+                        {isPending ? "Adding…" : isAdded ? "Added" : "Add"}
                       </button>
                     </div>
                   </div>
@@ -285,5 +264,16 @@ export function TmdbSearchPanel({
         </div>
       ) : null}
     </section>
+  );
+}
+
+function ProviderRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-0.5 truncate text-foreground/90">{value}</p>
+    </div>
   );
 }

@@ -81,86 +81,104 @@ export function GroupInviteDialog({ inviteCode, inviteLink }: GroupInviteDialogP
 
   return (
     <>
-      <button className={buttonVariants({ size: "sm", variant: "secondary" })} onClick={() => setOpen(true)} type="button">
+      <button
+        className={buttonVariants({ size: "sm", variant: "outline" })}
+        onClick={() => setOpen(true)}
+        type="button"
+      >
         Invite people
       </button>
 
       {open ? (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm"
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-background/70 px-4 py-6 backdrop-blur-sm"
           onClick={() => setOpen(false)}
           role="dialog"
         >
           <div
-            className="w-full max-w-xl rounded-xl border border-border bg-card p-6 shadow-xl"
+            className="w-full max-w-md rounded-2xl border border-border/60 bg-card p-6 shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
-              <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="space-y-1">
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">
                   Invite people
-                </p>
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                  Share code or link
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Anyone with either option can join this group.
+                  Share the code or link with anyone you want to invite.
                 </p>
               </div>
 
               <button
                 aria-label="Close invite popup"
-                className={cn(buttonVariants({ size: "sm", variant: "secondary" }), "h-11 w-11 px-0")}
+                className={cn(
+                  buttonVariants({ size: "sm", variant: "ghost" }),
+                  "h-9 w-9 px-0"
+                )}
                 onClick={() => setOpen(false)}
                 type="button"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="mt-6 space-y-4">
-              <div className="rounded-xl border border-border bg-secondary p-4">
-                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Ticket className="h-4 w-4" />
-                  <span>Invite code</span>
-                </div>
-                <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="mt-5 space-y-4">
+              <div className="space-y-1.5">
+                <label
+                  className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
+                  htmlFor="invite-code-input"
+                >
+                  <Ticket className="h-3.5 w-3.5" />
+                  Invite code
+                </label>
+                <div className="flex gap-2">
                   <input
+                    id="invite-code-input"
                     className={cn(inputClassName, "font-semibold uppercase tracking-[0.16em]")}
                     readOnly
                     value={inviteCode}
                   />
                   <button
+                    aria-label="Copy invite code"
                     className={buttonVariants({
                       size: "sm",
-                      variant: copiedField === "code" ? "primary" : "secondary"
+                      variant: copiedField === "code" ? "primary" : "outline"
                     })}
                     onClick={() => handleCopy("code", inviteCode)}
                     type="button"
                   >
-                    <Copy className="mr-2 h-4 w-4" />
+                    <Copy className="h-4 w-4" />
                     {copiedField === "code" ? "Copied" : "Copy"}
                   </button>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-border bg-secondary p-4">
-                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Link2 className="h-4 w-4" />
-                  <span>Invite link</span>
-                </div>
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <input className={inputClassName} readOnly value={inviteLink} />
+              <div className="space-y-1.5">
+                <label
+                  className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
+                  htmlFor="invite-link-input"
+                >
+                  <Link2 className="h-3.5 w-3.5" />
+                  Invite link
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="invite-link-input"
+                    className={inputClassName}
+                    readOnly
+                    value={inviteLink}
+                  />
                   <button
+                    aria-label="Copy invite link"
                     className={buttonVariants({
                       size: "sm",
-                      variant: copiedField === "link" ? "primary" : "secondary"
+                      variant: copiedField === "link" ? "primary" : "outline"
                     })}
                     onClick={() => handleCopy("link", inviteLink)}
                     type="button"
                   >
-                    <Copy className="mr-2 h-4 w-4" />
+                    <Copy className="h-4 w-4" />
                     {copiedField === "link" ? "Copied" : "Copy"}
                   </button>
                 </div>

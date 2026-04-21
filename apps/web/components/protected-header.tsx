@@ -14,10 +14,10 @@ interface ProtectedHeaderProps {
 
 function navLinkClass(active: boolean) {
   return cn(
-    "inline-flex min-h-11 items-center gap-2 rounded-lg px-4 py-2.5 font-medium transition-colors sm:min-h-12",
+    "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors",
     active
-      ? "bg-primary text-primary-foreground"
-      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+      ? "bg-secondary text-foreground"
+      : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
   );
 }
 
@@ -27,61 +27,64 @@ export function ProtectedHeader({ profile }: ProtectedHeaderProps) {
   const dashboardView = searchParams.get("view");
 
   const groupsActive =
-    pathname.startsWith("/groups") || (pathname === "/dashboard" && (!dashboardView || dashboardView === "groups"));
+    pathname.startsWith("/groups") ||
+    (pathname === "/dashboard" && (!dashboardView || dashboardView === "groups"));
   const nightsActive =
-    pathname.startsWith("/events") || (pathname === "/dashboard" && dashboardView === "nights");
+    pathname.startsWith("/events") ||
+    (pathname === "/dashboard" && dashboardView === "nights");
   const upcomingActive = pathname === "/dashboard" && dashboardView === "upcoming";
 
   return (
-    <header className="sticky top-0 z-10 border-b border-border bg-card/50 backdrop-blur-sm">
-      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
-            <Link className="inline-flex items-center gap-3" href="/dashboard?view=groups">
-              <span className="rounded-lg bg-primary p-2 text-primary-foreground">
-                <Film className="h-6 w-6" />
-              </span>
-              <span className="text-base font-semibold tracking-tight text-foreground">
-                Movie Night Planner
-              </span>
+    <header className="sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-6">
+          <Link className="inline-flex items-center gap-2.5" href="/dashboard?view=groups">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <Film className="h-4 w-4" />
+            </span>
+            <span className="hidden text-sm font-semibold tracking-tight text-foreground sm:inline">
+              Movie Night Planner
+            </span>
+          </Link>
+
+          <nav className="flex items-center gap-1">
+            <Link className={navLinkClass(groupsActive)} href="/dashboard?view=groups">
+              <Users className="h-4 w-4" />
+              <span>Groups</span>
             </Link>
+            <Link className={navLinkClass(nightsActive)} href="/dashboard?view=nights">
+              <Film className="h-4 w-4" />
+              <span className="hidden sm:inline">Movie nights</span>
+              <span className="sm:hidden">Nights</span>
+            </Link>
+            <Link className={navLinkClass(upcomingActive)} href="/dashboard?view=upcoming">
+              <Calendar className="h-4 w-4" />
+              <span>Upcoming</span>
+            </Link>
+          </nav>
+        </div>
 
-            <nav className="flex flex-wrap gap-2">
-              <Link className={navLinkClass(groupsActive)} href="/dashboard?view=groups">
-                <Users className="h-4 w-4" />
-                Groups
-              </Link>
-              <Link className={navLinkClass(nightsActive)} href="/dashboard?view=nights">
-                <Film className="h-4 w-4" />
-                Movie nights
-              </Link>
-              <Link className={navLinkClass(upcomingActive)} href="/dashboard?view=upcoming">
-                <Calendar className="h-4 w-4" />
-                Upcoming
-              </Link>
-            </nav>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="hidden text-sm text-muted-foreground lg:block">{profile.display_name}</p>
-            <ThemeToggle />
-            <Link
-              aria-label="Open settings"
-              className={cn(buttonVariants({ size: "sm", variant: "secondary" }), "h-11 w-11 px-0")}
-              href="/settings"
+        <div className="flex items-center gap-1.5">
+          <span className="hidden text-sm text-muted-foreground lg:inline">
+            {profile.display_name}
+          </span>
+          <ThemeToggle />
+          <Link
+            aria-label="Open settings"
+            className={cn(buttonVariants({ size: "sm", variant: "ghost" }), "h-9 w-9 px-0")}
+            href="/settings"
+          >
+            <Settings2 className="h-4 w-4" />
+          </Link>
+          <form action="/auth/signout" method="post">
+            <button
+              aria-label="Sign out"
+              className={cn(buttonVariants({ size: "sm", variant: "ghost" }), "h-9 w-9 px-0")}
+              type="submit"
             >
-              <Settings2 className="h-4 w-4" />
-            </Link>
-            <form action="/auth/signout" method="post">
-              <button
-                aria-label="Sign out"
-                className={cn(buttonVariants({ size: "sm", variant: "secondary" }), "h-11 w-11 px-0")}
-                type="submit"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
-            </form>
-          </div>
+              <LogOut className="h-4 w-4" />
+            </button>
+          </form>
         </div>
       </div>
     </header>

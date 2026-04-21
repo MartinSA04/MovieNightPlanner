@@ -8,13 +8,13 @@ export function cn(...inputs: ClassValue[]): string {
 }
 
 const panelVariants = cva(
-  "rounded-xl border border-border bg-card p-5 sm:p-6",
+  "rounded-2xl border border-border/60 bg-card p-5 sm:p-6",
   {
     variants: {
       tone: {
         default: "",
-        accent: "border-accent/30 bg-accent/10",
-        muted: "bg-secondary"
+        accent: "border-primary/30 bg-primary/5",
+        muted: "border-transparent bg-secondary/60"
       }
     },
     defaultVariants: {
@@ -39,7 +39,7 @@ export function SectionHeading(props: React.HTMLAttributes<HTMLDivElement>) {
     <div
       {...props}
       className={cn(
-        "text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground",
+        "text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground",
         props.className
       )}
     />
@@ -47,13 +47,13 @@ export function SectionHeading(props: React.HTMLAttributes<HTMLDivElement>) {
 }
 
 const pillVariants = cva(
-  "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em]",
+  "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide",
   {
     variants: {
       tone: {
-        neutral: "bg-primary text-primary-foreground",
-        accent: "bg-accent/20 text-accent",
-        muted: "bg-secondary text-secondary-foreground"
+        neutral: "bg-secondary text-secondary-foreground",
+        accent: "bg-primary/15 text-primary",
+        muted: "bg-muted text-muted-foreground"
       }
     },
     defaultVariants: {
@@ -71,17 +71,21 @@ export function Pill({ className, tone, ...props }: PillProps) {
 }
 
 export const buttonVariants = cva(
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-12",
+  "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
   {
     variants: {
       size: {
-        sm: "px-5 py-2.5 text-sm",
-        md: "px-6 py-3 text-sm"
+        sm: "h-9 px-3.5 text-sm",
+        md: "h-10 px-4 text-sm",
+        lg: "h-11 px-5 text-sm"
       },
       variant: {
         primary: "bg-primary text-primary-foreground hover:bg-primary/90",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/70",
+        outline: "border border-border bg-transparent text-foreground hover:bg-secondary/60",
+        ghost: "bg-transparent text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+        destructive:
+          "border border-destructive/30 bg-transparent text-destructive hover:border-destructive/60 hover:bg-destructive/10"
       }
     },
     defaultVariants: {
@@ -92,4 +96,4 @@ export const buttonVariants = cva(
 );
 
 export const inputClassName =
-  "w-full min-h-12 rounded-lg border border-border bg-input px-4 py-3.5 text-base text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary focus-visible:ring-2 focus-visible:ring-ring/50";
+  "w-full h-11 rounded-lg border border-border/60 bg-input px-3.5 text-sm text-foreground outline-none transition placeholder:text-muted-foreground/70 focus:border-primary/60 focus-visible:ring-2 focus-visible:ring-ring/40";

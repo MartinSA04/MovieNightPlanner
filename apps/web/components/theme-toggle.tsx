@@ -39,13 +39,13 @@ export function ThemeToggle() {
     <button
       aria-label={ready ? (theme === "dark" ? "Switch to light mode" : "Switch to dark mode") : "Toggle theme"}
       className={cn(
-        buttonVariants({ size: "sm", variant: "secondary" }),
-        "h-11 w-11 px-0"
+        buttonVariants({ size: "sm", variant: "ghost" }),
+        "h-9 w-9 px-0"
       )}
       onClick={toggleTheme}
       type="button"
     >
-      {theme === "dark" ? <SunMedium className="h-5 w-5" /> : <MoonStar className="h-5 w-5" />}
+      {theme === "dark" ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
       <span className="sr-only">
         {ready ? (theme === "dark" ? "Light mode" : "Dark mode") : "Theme"}
       </span>

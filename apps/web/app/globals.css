@@ -4,24 +4,24 @@
 
 :root {
   color-scheme: dark;
-  --background: 15 10 30;
+  --background: 12 9 24;
   --foreground: 245 243 255;
-  --card: 26 20 51;
+  --card: 22 17 42;
   --card-foreground: 245 243 255;
   --popover: 26 20 51;
   --popover-foreground: 245 243 255;
   --primary: 139 92 246;
   --primary-foreground: 255 255 255;
-  --secondary: 45 31 82;
-  --secondary-foreground: 245 243 255;
-  --muted: 36 27 62;
-  --muted-foreground: 168 160 192;
+  --secondary: 34 26 64;
+  --secondary-foreground: 232 228 248;
+  --muted: 28 21 54;
+  --muted-foreground: 164 158 188;
   --accent: 217 70 239;
   --accent-foreground: 255 255 255;
-  --destructive: 239 68 68;
+  --destructive: 244 114 114;
   --destructive-foreground: 255 255 255;
-  --border: 139 92 246;
-  --input-background: 36 27 62;
+  --border: 60 49 96;
+  --input-background: 26 20 51;
   --ring: 139 92 246;
   --chart-1: 139 92 246;
   --chart-2: 217 70 239;
@@ -36,24 +36,24 @@
 
 html.dark {
   color-scheme: dark;
-  --background: 15 10 30;
+  --background: 12 9 24;
   --foreground: 245 243 255;
-  --card: 26 20 51;
+  --card: 22 17 42;
   --card-foreground: 245 243 255;
   --popover: 26 20 51;
   --popover-foreground: 245 243 255;
   --primary: 139 92 246;
   --primary-foreground: 255 255 255;
-  --secondary: 45 31 82;
-  --secondary-foreground: 245 243 255;
-  --muted: 36 27 62;
-  --muted-foreground: 168 160 192;
+  --secondary: 34 26 64;
+  --secondary-foreground: 232 228 248;
+  --muted: 28 21 54;
+  --muted-foreground: 164 158 188;
   --accent: 217 70 239;
   --accent-foreground: 255 255 255;
-  --destructive: 239 68 68;
+  --destructive: 244 114 114;
   --destructive-foreground: 255 255 255;
-  --border: 139 92 246;
-  --input-background: 36 27 62;
+  --border: 60 49 96;
+  --input-background: 26 20 51;
   --ring: 139 92 246;
   --chart-1: 139 92 246;
   --chart-2: 217 70 239;
@@ -66,6 +66,8 @@ html {
   min-height: 100%;
   background: rgb(var(--background));
   font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -82,6 +84,7 @@ body {
     Helvetica,
     Arial,
     sans-serif;
+  letter-spacing: -0.005em;
 }
 
 h1,
@@ -97,6 +100,7 @@ h6 {
     Helvetica,
     Arial,
     sans-serif;
+  letter-spacing: -0.02em;
 }
 
 em,
@@ -115,17 +119,20 @@ a {
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
 }
 
 input,
-textarea {
+textarea,
+select {
   color: inherit;
 }
 
 input:focus,
 textarea:focus,
+select:focus,
 button:focus-visible,
 a:focus-visible {
   outline: 2px solid rgb(var(--ring) / 0.45);

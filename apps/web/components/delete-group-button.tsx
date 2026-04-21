@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { buttonVariants, cn } from "@movie-night/ui";
+import { buttonVariants } from "@movie-night/ui";
 
 interface DeleteGroupButtonProps {
   groupId: string;
@@ -53,20 +53,15 @@ export function DeleteGroupButton({ groupId }: DeleteGroupButtonProps) {
   return (
     <div className="flex flex-col items-start gap-2 sm:items-end">
       <button
-        className={cn(
-          buttonVariants({ size: "sm", variant: "secondary" }),
-          "border border-destructive/40 bg-transparent text-destructive hover:border-destructive/60 hover:bg-destructive/10 hover:text-destructive"
-        )}
+        className={buttonVariants({ size: "sm", variant: "destructive" })}
         disabled={isDeleting}
         onClick={() => void handleDelete()}
         type="button"
       >
-        {isDeleting ? "Deleting" : "Delete"}
+        {isDeleting ? "Deleting…" : "Delete group"}
       </button>
 
-      {error ? (
-        <p className="text-sm text-destructive">{error}</p>
-      ) : null}
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </div>
   );
 }
