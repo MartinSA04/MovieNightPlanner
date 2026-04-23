@@ -43,7 +43,6 @@ export interface DashboardPageData {
   groups: DashboardGroupPreview[];
   movieNights: DashboardMovieNightPreview[];
   profile: AppProfile;
-  upcomingMovieNights: DashboardMovieNightPreview[];
 }
 
 export interface NavigationGroup {
@@ -529,8 +528,7 @@ export async function loadDashboardPageData(): Promise<DashboardPageData> {
     return {
       groups: [],
       movieNights: [],
-      profile,
-      upcomingMovieNights: []
+      profile
     };
   }
 
@@ -589,11 +587,7 @@ export async function loadDashboardPageData(): Promise<DashboardPageData> {
   return {
     groups: groupPreviews,
     movieNights,
-    profile,
-    upcomingMovieNights: movieNights.filter((movieNight) => {
-      const scheduledAt = parseGroupEventTime(movieNight.scheduledFor);
-      return scheduledAt !== null && scheduledAt >= now;
-    })
+    profile
   };
 }
 

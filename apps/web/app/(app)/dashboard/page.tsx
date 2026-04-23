@@ -15,11 +15,11 @@ interface DashboardPageProps {
   }>;
 }
 
-type DashboardView = "groups" | "nights" | "upcoming";
+type DashboardView = "groups" | "nights";
 
 function getDashboardView(view?: string): DashboardView {
   if (view === "nights" || view === "upcoming") {
-    return view;
+    return "nights";
   }
 
   return "groups";
@@ -84,7 +84,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const activeView = getDashboardView(params.view);
   const data = await loadDashboardPageData();
-  const movieNights = activeView === "upcoming" ? data.upcomingMovieNights : data.movieNights;
+  const movieNights = data.movieNights;
 
   return (
     <div className="space-y-8">
@@ -166,12 +166,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">
               <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                {activeView === "upcoming" ? "Upcoming movie nights" : "Movie nights"}
+                Movie nights
               </h1>
               <p className="text-sm text-muted-foreground">
-                {activeView === "upcoming"
-                  ? "The next scheduled movie nights across your groups."
-                  : "Active movie nights across all of your groups."}
+                Upcoming and active movie nights across all of your groups.
               </p>
             </div>
             <CreateMovieNightButton
@@ -339,9 +337,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 No movie nights here yet
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {activeView === "upcoming"
-                  ? "Upcoming movie nights will appear here."
-                  : "Create a movie night from one of your groups to get started."}
+                Create a movie night from one of your groups to get started.
               </p>
             </div>
           )}

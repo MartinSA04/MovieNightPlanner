@@ -132,7 +132,7 @@ with check (
     select 1
     from public.movie_night_events event
     where event.id = event_id
-      and event.status = 'open'
+      and event.status in ('draft', 'open')
       and public.is_group_member(event.group_id)
   )
 );
@@ -146,7 +146,7 @@ using (
     select 1
     from public.movie_night_events event
     where event.id = event_id
-      and event.status = 'open'
+      and event.status in ('draft', 'open')
       and public.is_group_member(event.group_id)
   )
 )
@@ -156,7 +156,7 @@ with check (
     select 1
     from public.movie_night_events event
     where event.id = event_id
-      and event.status = 'open'
+      and event.status in ('draft', 'open')
       and public.is_group_member(event.group_id)
   )
 );
@@ -170,7 +170,7 @@ using (
     select 1
     from public.movie_night_events event
     where event.id = event_id
-      and event.status = 'open'
+      and event.status in ('draft', 'open')
       and public.is_group_member(event.group_id)
   )
 );

@@ -18,6 +18,7 @@
     "db:status": "./scripts/local-status.sh",
     "db:reset": "./scripts/local-reset.sh",
     "db:stop": "./scripts/local-down.sh",
+    "db:seed:test": "node ./apps/web/scripts/seed-test-data.mjs",
     "setup:local-env": "./scripts/setup-local-env.sh",
     "local:up": "./scripts/local-up.sh",
     "local:reset": "./scripts/local-reset.sh",

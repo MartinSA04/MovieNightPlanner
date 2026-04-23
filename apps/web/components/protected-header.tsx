@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Calendar, Film, LogOut, Settings2, Users } from "lucide-react";
+import { Film, LogOut, Settings2, Users } from "lucide-react";
 import { buttonVariants, cn } from "@movie-night/ui";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -32,7 +32,6 @@ export function ProtectedHeader({ profile }: ProtectedHeaderProps) {
   const nightsActive =
     pathname.startsWith("/events") ||
     (pathname === "/dashboard" && dashboardView === "nights");
-  const upcomingActive = pathname === "/dashboard" && dashboardView === "upcoming";
 
   return (
     <header className="sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur">
@@ -56,10 +55,6 @@ export function ProtectedHeader({ profile }: ProtectedHeaderProps) {
               <Film className="h-4 w-4" />
               <span className="hidden sm:inline">Movie nights</span>
               <span className="sm:hidden">Nights</span>
-            </Link>
-            <Link className={navLinkClass(upcomingActive)} href="/dashboard?view=upcoming">
-              <Calendar className="h-4 w-4" />
-              <span>Upcoming</span>
             </Link>
           </nav>
         </div>
