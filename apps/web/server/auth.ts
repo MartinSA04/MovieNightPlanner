@@ -124,6 +124,20 @@ export async function ensureProfileForUser(
     .single();
 
   if (error) {
+    if (error.code === "23505") {
+      const { data: racedProfile, error: rereadError } = await supabase
+        .from("profiles")
+        .select("id, display_name, email, avatar_url, country_code")
+        .eq("id", user.id)
+        .single();
+
+      if (rereadError) {
+        throw new Error(`Could not ensure profile for ${user.id}: ${rereadError.message}`);
+      }
+
+      return normalizeProfileRow(racedProfile);
+    }
+
     throw new Error(`Could not ensure profile for ${user.id}: ${error.message}`);
   }
 
