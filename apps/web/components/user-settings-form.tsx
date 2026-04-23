@@ -215,8 +215,9 @@ export function UserSettingsForm({
             Loading services…
           </div>
         ) : filteredServices.length > 0 ? (
-          <div className="max-h-96 overflow-y-auto rounded-2xl border border-border/60 bg-card p-3">
-            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="relative h-[calc(100vh-30rem)] min-h-[12rem] overflow-hidden rounded-2xl border border-border/60 bg-card">
+            <div className="absolute inset-0 overflow-y-auto p-3">
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
               {filteredServices.map((service) => {
                 const checked = selectedServiceIds.has(service.id);
 
@@ -272,6 +273,7 @@ export function UserSettingsForm({
                   </label>
                 );
               })}
+              </div>
             </div>
           </div>
         ) : (

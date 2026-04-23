@@ -1,3 +1,4 @@
+import { AppearanceSetting } from "@/components/appearance-setting";
 import { UserSettingsForm } from "@/components/user-settings-form";
 import { getRegionLabel } from "@/lib/regions";
 import { loadUserSettingsData } from "@/server/settings";
@@ -24,6 +25,8 @@ export default async function SettingsPage() {
             : `${data.selectedServiceIds.length} services saved`}
         </p>
       </header>
+
+      <AppearanceSetting />
 
       <UserSettingsForm
         initialCountryCode={data.profile.country_code}

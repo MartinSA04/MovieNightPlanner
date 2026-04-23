@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Film, LogOut, Settings2, Users } from "lucide-react";
-import { buttonVariants, cn } from "@movie-night/ui";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { Film, Users } from "lucide-react";
+import { cn } from "@movie-night/ui";
+import { ProfileMenu } from "@/components/profile-menu";
 
 interface ProtectedHeaderProps {
   profile: {
+    avatar_url: string | null;
     display_name: string;
+    email: string;
   };
 }
 
@@ -59,28 +61,11 @@ export function ProtectedHeader({ profile }: ProtectedHeaderProps) {
           </nav>
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <span className="hidden text-sm text-muted-foreground lg:inline">
-            {profile.display_name}
-          </span>
-          <ThemeToggle />
-          <Link
-            aria-label="Open settings"
-            className={cn(buttonVariants({ size: "sm", variant: "ghost" }), "h-9 w-9 px-0")}
-            href="/settings"
-          >
-            <Settings2 className="h-4 w-4" />
-          </Link>
-          <form action="/auth/signout" method="post">
-            <button
-              aria-label="Sign out"
-              className={cn(buttonVariants({ size: "sm", variant: "ghost" }), "h-9 w-9 px-0")}
-              type="submit"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </form>
-        </div>
+        <ProfileMenu
+          avatarUrl={profile.avatar_url}
+          displayName={profile.display_name}
+          email={profile.email}
+        />
       </div>
     </header>
   );
