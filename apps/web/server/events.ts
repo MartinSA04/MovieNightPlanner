@@ -19,6 +19,7 @@ import {
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient as createSupabaseClient } from "@/lib/supabase/server";
 import { ensureProfileForUser, requireCurrentUser, type AppProfile } from "@/server/auth";
+import { recordCompletedEventForMembers } from "@/server/personal-lists";
 import { getMovieDetails, getWatchProviderAvailability } from "@/server/tmdb/client";
 
 export interface EventRecordView {
@@ -882,6 +883,22 @@ export async function transitionEventStatus(
 
   if (updateError) {
     throw new Error(`Could not update movie night status: ${updateError.message}`);
+  }
+
+  if (input.status === "completed" && nextWinningSuggestionId) {
+    const { data: winningSuggestion } = await admin
+      .from("movie_suggestions")
+      .select("tmdb_movie_id")
+      .eq("id", nextWinningSuggestionId)
+      .maybeSingle();
+
+    if (winningSuggestion?.tmdb_movie_id) {
+      await recordCompletedEventForMembers({
+        eventId: input.eventId,
+        groupId: event.group_id,
+        tmdbMovieId: winningSuggestion.tmdb_movie_id
+      });
+    }
   }
 
   return {

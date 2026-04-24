@@ -77,6 +77,18 @@ export const deleteCommentSchema = z.object({
   commentId: z.string().uuid()
 });
 
+export const addToWatchlistSchema = z.object({
+  tmdbMovieId: z.number().int().positive(),
+  note: z.string().trim().max(280).optional()
+});
+
+export const markWatchedSchema = z.object({
+  tmdbMovieId: z.number().int().positive(),
+  eventId: z.string().uuid().optional(),
+  rating: z.number().int().min(1).max(5).optional(),
+  note: z.string().trim().max(280).optional()
+});
+
 export type CreateGroupInput = z.infer<typeof createGroupSchema>;
 export type JoinGroupByInviteInput = z.infer<typeof joinGroupByInviteSchema>;
 export type CreateEventInput = z.infer<typeof createEventSchema>;
@@ -88,3 +100,5 @@ export type UpdateUserSettingsInput = z.infer<typeof updateUserSettingsSchema>;
 export type TransitionEventStatusInput = z.infer<typeof transitionEventStatusSchema>;
 export type PostCommentInput = z.infer<typeof postCommentSchema>;
 export type DeleteCommentInput = z.infer<typeof deleteCommentSchema>;
+export type AddToWatchlistInput = z.infer<typeof addToWatchlistSchema>;
+export type MarkWatchedInput = z.infer<typeof markWatchedSchema>;

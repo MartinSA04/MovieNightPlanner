@@ -5,15 +5,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { TmdbMovieSearchResultDto } from "@movie-night/domain";
 import { buttonVariants, cn, inputClassName } from "@movie-night/ui";
-import { Search } from "lucide-react";
+import { Bookmark, BookmarkCheck, CheckCircle2, History, Search } from "lucide-react";
 import { MoviePoster } from "@/components/movie-poster";
 
 interface TmdbSearchPanelProps {
   canAddMovies: boolean;
   enabled: boolean;
   eventId: string;
+  groupWatchedMovieIds: number[];
   regionCode: string;
   suggestedMovieIds: number[];
+  watchedMovieIds: number[];
+  watchlistMovieIds: number[];
 }
 
 interface TmdbSearchResponse {
@@ -46,8 +49,11 @@ export function TmdbSearchPanel({
   canAddMovies,
   enabled,
   eventId,
+  groupWatchedMovieIds,
   regionCode,
-  suggestedMovieIds
+  suggestedMovieIds,
+  watchedMovieIds,
+  watchlistMovieIds
 }: TmdbSearchPanelProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -56,7 +62,11 @@ export function TmdbSearchPanel({
   const [hasSearched, setHasSearched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [pendingMovieId, setPendingMovieId] = useState<number | null>(null);
+  const [pendingWatchlistMovieId, setPendingWatchlistMovieId] = useState<number | null>(null);
   const [addedMovieIds, setAddedMovieIds] = useState<number[]>(suggestedMovieIds);
+  const [watchlistIds, setWatchlistIds] = useState<number[]>(watchlistMovieIds);
+  const watchedIds = new Set(watchedMovieIds);
+  const groupWatchedIds = new Set(groupWatchedMovieIds);
   const canSearch = enabled && query.trim().length >= 2 && !isLoading;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -92,6 +102,35 @@ export function TmdbSearchPanel({
       setHasSearched(true);
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleAddToWatchlist(tmdbMovieId: number) {
+    setPendingWatchlistMovieId(tmdbMovieId);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/watchlist`, {
+        body: JSON.stringify({ tmdbMovieId }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST"
+      });
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string; status?: string }
+        | null;
+
+      if (!response.ok) {
+        setError(payload?.error ?? "Could not add to watchlist.");
+        return;
+      }
+
+      setWatchlistIds((current) =>
+        current.includes(tmdbMovieId) ? current : [...current, tmdbMovieId]
+      );
+    } catch {
+      setError("Could not add to watchlist.");
+    } finally {
+      setPendingWatchlistMovieId(null);
     }
   }
 
@@ -193,6 +232,10 @@ export function TmdbSearchPanel({
                 result.watchProviders?.buyProviders.map((provider) => provider.providerName) ?? [];
               const isAdded = addedMovieIds.includes(result.tmdbMovieId);
               const isPending = pendingMovieId === result.tmdbMovieId;
+              const onWatchlist = watchlistIds.includes(result.tmdbMovieId);
+              const userWatched = watchedIds.has(result.tmdbMovieId);
+              const groupWatched = groupWatchedIds.has(result.tmdbMovieId);
+              const watchlistPending = pendingWatchlistMovieId === result.tmdbMovieId;
 
               return (
                 <div
@@ -226,6 +269,29 @@ export function TmdbSearchPanel({
                           ) : null}
                         </div>
 
+                        {(onWatchlist || userWatched || groupWatched) ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {onWatchlist ? (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                                <BookmarkCheck className="h-3 w-3" />
+                                On your list
+                              </span>
+                            ) : null}
+                            {userWatched ? (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-chart-4/40 bg-chart-4/10 px-2 py-0.5 text-[11px] font-medium text-chart-4">
+                                <CheckCircle2 className="h-3 w-3" />
+                                You watched this
+                              </span>
+                            ) : null}
+                            {groupWatched && !userWatched ? (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-border/60 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                                <History className="h-3 w-3" />
+                                Group watched this
+                              </span>
+                            ) : null}
+                          </div>
+                        ) : null}
+
                         {result.overview ? (
                           <p className="line-clamp-3 max-w-3xl text-sm leading-6 text-muted-foreground">
                             {result.overview}
@@ -240,21 +306,36 @@ export function TmdbSearchPanel({
                       </div>
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-3 lg:flex-col lg:items-end lg:gap-2">
+                    <div className="flex shrink-0 flex-wrap items-center gap-2 lg:flex-col lg:items-end">
                       <p className="text-xs text-muted-foreground">
                         {flatrateNames.length > 0 ? "Included with subscription" : "Not on any stream"}
                       </p>
-                      <button
-                        className={buttonVariants({
-                          size: "sm",
-                          variant: isAdded ? "outline" : "primary"
-                        })}
-                        disabled={!canAddMovies || isAdded || isPending}
-                        onClick={() => void handleAddMovie(result.tmdbMovieId)}
-                        type="button"
-                      >
-                        {isPending ? "Adding…" : isAdded ? "Added" : "Add"}
-                      </button>
+                      <div className="flex flex-wrap gap-2 lg:flex-col lg:items-end">
+                        <button
+                          className={buttonVariants({
+                            size: "sm",
+                            variant: isAdded ? "outline" : "primary"
+                          })}
+                          disabled={!canAddMovies || isAdded || isPending}
+                          onClick={() => void handleAddMovie(result.tmdbMovieId)}
+                          type="button"
+                        >
+                          {isPending ? "Adding…" : isAdded ? "Added" : "Add"}
+                        </button>
+                        <button
+                          className={buttonVariants({ size: "sm", variant: "ghost" })}
+                          disabled={onWatchlist || watchlistPending}
+                          onClick={() => void handleAddToWatchlist(result.tmdbMovieId)}
+                          type="button"
+                        >
+                          <Bookmark className="h-4 w-4" />
+                          {watchlistPending
+                            ? "Saving…"
+                            : onWatchlist
+                              ? "On your list"
+                              : "Save for later"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Film, Users } from "lucide-react";
+import { Bookmark, Film, Users } from "lucide-react";
 import { cn } from "@movie-night/ui";
 import { ProfileMenu } from "@/components/profile-menu";
 
@@ -34,6 +34,7 @@ export function ProtectedHeader({ profile }: ProtectedHeaderProps) {
   const nightsActive =
     pathname.startsWith("/events") ||
     (pathname === "/dashboard" && dashboardView === "nights");
+  const watchlistActive = pathname.startsWith("/watchlist");
 
   return (
     <header className="sticky top-0 z-10 border-b border-border/60 bg-background/80 backdrop-blur">
@@ -57,6 +58,10 @@ export function ProtectedHeader({ profile }: ProtectedHeaderProps) {
               <Film className="h-4 w-4" />
               <span className="hidden sm:inline">Movie nights</span>
               <span className="sm:hidden">Nights</span>
+            </Link>
+            <Link className={navLinkClass(watchlistActive)} href="/watchlist?view=watchlist">
+              <Bookmark className="h-4 w-4" />
+              <span>Watchlist</span>
             </Link>
           </nav>
         </div>

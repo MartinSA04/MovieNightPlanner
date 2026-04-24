@@ -24,20 +24,17 @@ These are the three items already flagged in `product-spec.md`. Everything else 
 
 The app is currently 100% group-scoped. Adding a private layer makes it useful even when no movie night is planned.
 
-1. **Private "to-watch" list**
+1. **Private "to-watch" list** — *done*
    - Why: the one feature you asked for. Users browse TMDb freely and add to their own shelf; they can later push items from the shelf into a group suggestion with one click.
-   - Data: new table `user_watchlist (user_id, tmdb_movie_id, added_at, note)` with RLS `user_id = auth.uid()`.
-   - UI: new `/watchlist` route, add-to-watchlist action on TMDb search results and any suggestion row, "add from my list" shortcut inside the create-suggestion flow.
+   - Delivered: migration `202604240002_personal_movie_lists.sql` with `user_watchlist` + RLS, domain schema `addToWatchlistSchema`, server module `apps/web/server/personal-lists.ts`, API `POST /api/watchlist` + `DELETE /api/watchlist/[tmdbMovieId]`, a `/watchlist` route with `To watch` / `Watched` tabs, a `WatchlistRow` with remove + mark-watched, a "Save for later" button next to "Add" on every TMDb search result, and a `Watchlist` link in the top nav. Still to do: "add from my list" shortcut when picking suggestions for an event (surface the watchlist inline rather than only via search).
 
-2. **Seen / already-watched list**
+2. **Seen / already-watched list** — *done*
    - Why: prevents repeat suggestions ("we watched this last month") and powers a user's personal history view.
-   - Data: `user_watched (user_id, tmdb_movie_id, watched_at, rating, source: group|solo, event_id?)`. Auto-populate when a user attends a locked event (Phase 0 item 1).
-   - UI: subtle "Seen" badge on TMDb search hits for the current user; toggle on each movie detail; filter on the watchlist view.
+   - Delivered: same migration adds `user_watched` with RLS, `markWatchedSchema` in domain, `markWatched`/`unmarkWatched`/`loadWatched` in the server module, API `POST /api/watched` + `DELETE /api/watched/[tmdbMovieId]`, a "You watched this" badge on TMDb search hits, the `Watched` tab on `/watchlist`. Auto-populate: when a manager transitions an event to `completed`, `recordCompletedEventForMembers` upserts the winning movie into every group member's `user_watched` with the originating `event_id`. Manual rating editor UI is deferred — the rating column is in place so adding it later is a pure frontend change.
 
-3. **Group-level watch history**
+3. **Group-level watch history** — *done*
    - Why: "has the group watched this together before?" is a common question. Surfaces as a warning when a suggestion duplicates a past winner.
-   - Data: derived from completed events; no new table. Query + indexed lookup by `(group_id, tmdb_movie_id)`.
-   - UI: badge on search results inside a group suggestion flow.
+   - Delivered: `loadGroupWatchHistory` / `loadGroupWatchedMovieIds` derive a history from `movie_night_events` where `status in ('locked', 'completed')` joined with winning suggestions (no new table). TMDb search on the suggestion flow passes `groupWatchedMovieIds`; search results show a "Group watched this" chip when it duplicates a past winner. A dedicated group-history page is deferred.
 
 4. **Avatar upload**
    - Why: the profile menu currently only shows initials. Tiny visual polish that makes groups feel more like a room of people.

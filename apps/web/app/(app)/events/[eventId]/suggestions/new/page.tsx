@@ -3,7 +3,13 @@ import { buttonVariants } from "@movie-night/ui";
 import { notFound } from "next/navigation";
 import { TmdbSearchPanel } from "@/components/tmdb-search-panel";
 import { getRegionLabel } from "@/lib/regions";
+import { requireCurrentUser } from "@/server/auth";
 import { loadEventPageData } from "@/server/events";
+import {
+  loadGroupWatchedMovieIds,
+  loadWatchedMovieIds,
+  loadWatchlistMovieIds
+} from "@/server/personal-lists";
 import { isTmdbConfigured } from "@/server/tmdb/client";
 
 interface NewSuggestionPageProps {
@@ -14,6 +20,7 @@ interface NewSuggestionPageProps {
 
 export default async function NewSuggestionPage({ params }: NewSuggestionPageProps) {
   const { eventId } = await params;
+  const user = await requireCurrentUser();
   const data = await loadEventPageData(eventId);
 
   if (!data) {
@@ -21,6 +28,12 @@ export default async function NewSuggestionPage({ params }: NewSuggestionPagePro
   }
 
   const canAddMovies = ["draft", "open"].includes(data.event.status);
+
+  const [watchlistIds, watchedIds, groupWatchedIds] = await Promise.all([
+    loadWatchlistMovieIds(user.id),
+    loadWatchedMovieIds(user.id),
+    loadGroupWatchedMovieIds(data.group.id)
+  ]);
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -46,8 +59,11 @@ export default async function NewSuggestionPage({ params }: NewSuggestionPagePro
         canAddMovies={canAddMovies}
         enabled={isTmdbConfigured()}
         eventId={data.event.id}
+        groupWatchedMovieIds={Array.from(groupWatchedIds)}
         regionCode={data.event.regionCode}
         suggestedMovieIds={data.suggestions.map((suggestion) => suggestion.tmdbMovieId)}
+        watchedMovieIds={Array.from(watchedIds)}
+        watchlistMovieIds={Array.from(watchlistIds)}
       />
     </div>
   );
