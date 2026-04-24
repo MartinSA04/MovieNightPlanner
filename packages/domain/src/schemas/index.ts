@@ -62,6 +62,21 @@ export const updateUserSettingsSchema = z.object({
   providerIds: z.array(z.string().uuid()).max(200)
 });
 
+export const transitionEventStatusSchema = z.object({
+  eventId: z.string().uuid(),
+  status: z.enum(["draft", "open", "locked", "completed", "cancelled"]),
+  winningSuggestionId: z.string().uuid().nullable().optional()
+});
+
+export const postCommentSchema = z.object({
+  eventId: z.string().uuid(),
+  body: z.string().trim().min(1).max(2000)
+});
+
+export const deleteCommentSchema = z.object({
+  commentId: z.string().uuid()
+});
+
 export type CreateGroupInput = z.infer<typeof createGroupSchema>;
 export type JoinGroupByInviteInput = z.infer<typeof joinGroupByInviteSchema>;
 export type CreateEventInput = z.infer<typeof createEventSchema>;
@@ -70,3 +85,6 @@ export type RemoveSuggestionInput = z.infer<typeof removeSuggestionSchema>;
 export type CastVoteInput = z.infer<typeof castVoteSchema>;
 export type SearchMoviesInput = z.infer<typeof searchMoviesSchema>;
 export type UpdateUserSettingsInput = z.infer<typeof updateUserSettingsSchema>;
+export type TransitionEventStatusInput = z.infer<typeof transitionEventStatusSchema>;
+export type PostCommentInput = z.infer<typeof postCommentSchema>;
+export type DeleteCommentInput = z.infer<typeof deleteCommentSchema>;

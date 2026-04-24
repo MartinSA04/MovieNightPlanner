@@ -1,12 +1,17 @@
 "use client";
 
+import { Tv } from "lucide-react";
+import { cn } from "@movie-night/ui";
 import { MoviePoster } from "@/components/movie-poster";
 import { RemoveSuggestionButton } from "@/components/remove-suggestion-button";
 
 interface EventSuggestionBoardItem {
+  availabilityKnown: boolean;
+  availableFlatrateProviders: string[];
   ballotCount: number;
   createdAt: string;
   id: string;
+  matchedMemberCount: number;
   note: string | null;
   originalTitle: string | null;
   overview: string | null;
@@ -16,6 +21,7 @@ interface EventSuggestionBoardItem {
   suggestedByDisplayName: string;
   suggestedByUserId: string;
   title: string;
+  totalMemberCount: number;
 }
 
 interface EventSuggestionsBoardProps {
@@ -47,6 +53,50 @@ function formatStanding(points: number, ballotCount: number) {
   const pointsLabel = `${points} ${points === 1 ? "point" : "points"}`;
   const ballotLabel = `${ballotCount} ${ballotCount === 1 ? "vote" : "votes"}`;
   return `${pointsLabel} · ${ballotLabel}`;
+}
+
+function renderAvailability(suggestion: EventSuggestionBoardItem) {
+  if (!suggestion.availabilityKnown) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+        <Tv className="h-3 w-3" />
+        Availability unknown
+      </span>
+    );
+  }
+
+  const providers = suggestion.availableFlatrateProviders;
+
+  if (providers.length === 0) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+        <Tv className="h-3 w-3" />
+        Not on subscriptions
+      </span>
+    );
+  }
+
+  const members = suggestion.matchedMemberCount;
+  const total = suggestion.totalMemberCount;
+  const coverageLabel =
+    total > 0 ? `${members}/${total} can stream` : providers.slice(0, 2).join(", ");
+  const accent =
+    members > 0
+      ? "border-primary/40 bg-primary/10 text-primary"
+      : "border-border/60 text-muted-foreground";
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium",
+        accent
+      )}
+      title={providers.join(", ")}
+    >
+      <Tv className="h-3 w-3" />
+      {coverageLabel}
+    </span>
+  );
 }
 
 export function EventSuggestionsBoard({
@@ -91,9 +141,12 @@ export function EventSuggestionsBoard({
                   ) : null}
                 </div>
 
-                <p className="text-sm font-medium text-foreground/90">
-                  {formatStanding(suggestion.points, suggestion.ballotCount)}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-medium text-foreground/90">
+                    {formatStanding(suggestion.points, suggestion.ballotCount)}
+                  </p>
+                  {renderAvailability(suggestion)}
+                </div>
 
                 {suggestion.overview ? (
                   <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">

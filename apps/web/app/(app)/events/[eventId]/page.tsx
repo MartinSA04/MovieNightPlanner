@@ -1,10 +1,16 @@
 import Link from "next/link";
+import { Trophy } from "lucide-react";
 import { buttonVariants, cn } from "@movie-night/ui";
 import { notFound } from "next/navigation";
+import { canManageEvent } from "@movie-night/domain";
+import { EventCommentsThread } from "@/components/event-comments-thread";
+import { EventRealtimeSync } from "@/components/event-realtime-sync";
+import { EventStatusActions } from "@/components/event-status-actions";
 import { EventSuggestionsBoard } from "@/components/event-suggestions-board";
 import { EventVoteDialog } from "@/components/event-vote-dialog";
 import { getEventStatusLabel } from "@/lib/event-status";
 import { getRegionLabel } from "@/lib/regions";
+import { loadEventComments } from "@/server/comments";
 import { loadEventPageData } from "@/server/events";
 
 interface EventDetailPageProps {
@@ -18,10 +24,10 @@ interface EventDetailPageProps {
   }>;
 }
 
-type EventView = "details" | "suggestions";
+type EventView = "details" | "suggestions" | "discussion";
 
 function getEventView(view?: string): EventView {
-  if (view === "details") {
+  if (view === "details" || view === "discussion") {
     return view;
   }
 
@@ -61,8 +67,11 @@ export default async function EventDetailPage({
     notFound();
   }
 
+  const comments = await loadEventComments(data.event.id);
+
   const canAddMovies = ["draft", "open"].includes(data.event.status);
   const canVote = ["draft", "open"].includes(data.event.status);
+  const canManage = canManageEvent(data.actorRole);
   const eventHeaderMeta = [
     data.group.name,
     getRegionLabel(data.event.regionCode),
@@ -70,9 +79,13 @@ export default async function EventDetailPage({
   ]
     .filter((value): value is string => Boolean(value))
     .join(" · ");
+  const winningSuggestion = data.event.winningSuggestionId
+    ? data.suggestions.find((s) => s.id === data.event.winningSuggestionId)
+    : null;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
+      <EventRealtimeSync eventId={data.event.id} />
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
@@ -98,6 +111,17 @@ export default async function EventDetailPage({
             Movies
           </Link>
           <Link
+            className={tabLinkClass(activeView === "discussion")}
+            href={`/events/${data.event.id}?view=discussion`}
+          >
+            Discussion
+            {comments.length > 0 ? (
+              <span className="ml-2 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                {comments.length}
+              </span>
+            ) : null}
+          </Link>
+          <Link
             className={tabLinkClass(activeView === "details")}
             href={`/events/${data.event.id}?view=details`}
           >
@@ -108,6 +132,24 @@ export default async function EventDetailPage({
 
       {activeView === "suggestions" ? (
         <section className="space-y-4">
+          {winningSuggestion ? (
+            <div className="flex flex-col gap-2 rounded-2xl border border-primary/40 bg-primary/5 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                  <Trophy className="h-4 w-4" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium uppercase tracking-wide text-primary">
+                    {data.event.status === "completed" ? "Watched" : "Locked pick"}
+                  </p>
+                  <p className="truncate text-base font-semibold text-foreground">
+                    {winningSuggestion.title}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground">
               {data.suggestions.length === 1 ? "1 movie" : `${data.suggestions.length} movies`}
@@ -134,6 +176,20 @@ export default async function EventDetailPage({
             </div>
           </div>
 
+          {canManage ? (
+            <EventStatusActions
+              canManage={canManage}
+              eventId={data.event.id}
+              status={data.event.status}
+              suggestions={data.suggestions.map((s) => ({
+                id: s.id,
+                points: s.points,
+                title: s.title
+              }))}
+              winningSuggestionId={data.event.winningSuggestionId}
+            />
+          ) : null}
+
           {data.suggestions.length > 0 ? (
             <EventSuggestionsBoard
               canRemoveMovies={canAddMovies}
@@ -149,6 +205,16 @@ export default async function EventDetailPage({
               </p>
             </div>
           )}
+        </section>
+      ) : null}
+
+      {activeView === "discussion" ? (
+        <section className="space-y-4">
+          <EventCommentsThread
+            currentUserId={data.profile.id}
+            eventId={data.event.id}
+            initialComments={comments}
+          />
         </section>
       ) : null}
 

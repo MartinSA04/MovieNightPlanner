@@ -4,21 +4,21 @@ Forward-looking plan beyond the current MVP. Phases are ordered by dependency an
 
 Out of scope for the roadmap (matches `product-spec.md`): native mobile app, social feed, AI recommendations, monetization, heavy analytics, full chat product.
 
-## Phase 0 — Finish deferred MVP work
+## Phase 0 — Finish deferred MVP work *(complete)*
 
 These are the three items already flagged in `product-spec.md`. Everything else depends on this foundation being stable.
 
-1. **Explicit winner selection and movie-night lock flow**
+1. **Explicit winner selection and movie-night lock flow** — *done*
    - Why: votes produce a leader but nothing currently marks an event as "this is what we're watching." Locking the winner freezes the state and enables downstream features (history, ratings, re-suggestion prevention).
-   - Surfaces: `movie_night_events.winning_suggestion_id` already exists; needs UI on the event detail page (owner/admin action), status transitions `open → locked → completed`, and a server action guarded by permissions.
+   - Delivered: domain helpers in `packages/domain/src/voting/event-lifecycle.ts` (`canManageEvent`, `canTransitionEventStatus`, `statusRequiresWinner`, `statusClearsWinner`), `transitionEventStatusSchema` in schemas, `transitionEventStatus` server function, `POST /api/events/[eventId]/status` route, `EventStatusActions` client component with lock/unlock/complete/cancel actions and a winner picker dialog, winner banner on the event detail Movies tab. Status labels updated for `draft` → "Planning", `open` → "Voting open", `completed` → "Watched".
 
-2. **Subscription-aware provider matching in the leaderboard**
+2. **Subscription-aware provider matching in the leaderboard** — *done*
    - Why: users already record their streaming services, but the movie-night view doesn't tell them "3 of 4 members can stream this." That's the key decision input.
-   - Surfaces: new server query that joins `user_streaming_services`, `watch_provider_cache`, and suggestions; badge on each leaderboard row; group-level "combined coverage" chip.
+   - Delivered: `loadEventPageData` now joins `user_streaming_services`, `watch_provider_cache`, and suggestions into per-suggestion coverage (`matchedMemberCount`, `totalMemberCount`, `availableFlatrateProviders`, `availabilityKnown`); a coverage chip on each leaderboard row in `EventSuggestionsBoard` reports "N/M can stream" with provider names on hover. `addSuggestionToEvent` proactively warms `watch_provider_cache` for the event's region when TMDb is configured. Remaining polish: group-level combined-coverage chip and rent/buy-only indicator.
 
-3. **Comments + realtime updates**
+3. **Comments + realtime updates** — *done*
    - Why: decisions happen in chat; pulling the conversation in-app makes the event the source of truth. Realtime makes voting feel collaborative.
-   - Surfaces: `comments` table already exists; add an inline thread under the suggestions list. Wire Supabase realtime channels for votes, suggestions, and comments; invalidate React Query / `router.refresh` on events.
+   - Delivered: `comments` schema in domain (`postCommentSchema`, `deleteCommentSchema`), server module `apps/web/server/comments.ts` (`loadEventComments`, `postComment`, `deleteComment`), API routes `POST/GET /api/events/[eventId]/comments` and `DELETE /api/events/[eventId]/comments/[commentId]`, `EventCommentsThread` client component with author deletion and ⌘/Ctrl+Enter send, and a new `Discussion` tab on the event detail page with a running comment count. Realtime is a shared `EventRealtimeSync` component mounted on the page that subscribes to `comments`, `votes`, `movie_suggestions`, and `movie_night_events` rows filtered to the current event and calls `router.refresh()` on any change. Added migration `202604240001_realtime_publication.sql` to add those four tables to the `supabase_realtime` publication.
 
 ## Phase 1 — Per-user personal layer
 
